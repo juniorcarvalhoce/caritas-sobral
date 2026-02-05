@@ -50,7 +50,7 @@ const Hero = () => {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 py-8 md:py-0 relative z-10">
+      <div className="container mx-auto px-4 pt-28 pb-12 md:py-0 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
