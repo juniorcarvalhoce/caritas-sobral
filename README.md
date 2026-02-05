@@ -1,70 +1,84 @@
-# Welcome to your Lovable project
+# Cáritas Diocesana de Sobral
 
+Este repositório contém o código-fonte do site institucional da **Cáritas Diocesana de Sobral**. O projeto é uma aplicação web moderna desenvolvida para divulgar as ações, projetos, editais e notícias da organização, promovendo transparência e engajamento com a comunidade.
 
-## How can I edit this code?
+## 📋 Funcionalidades
 
-There are several ways of editing your application.
+O sistema possui uma interface pública para visitantes e uma área administrativa para gestão de conteúdo.
 
-**Use Lovable**
+### Área Pública
+- **Página Inicial:** Apresentação da instituição, missão e valores.
+- **Projetos:** Divulgação das áreas de atuação (Convivência com Semiárido, Economia Solidária, Juventudes, Políticas Públicas).
+- **Notícias:** Carrossel e listagem de notícias atualizadas sobre as ações da Cáritas.
+- **Editais:** Área dedicada para publicação e consulta de editais.
+- **Mapa Interativo:** Visualização das áreas de atuação e projetos.
+- **Contato:** Formulário e informações de contato.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/78c96fb5-1651-48cd-a239-b51883dc68f1) and start prompting.
+### Área Administrativa
+- **Autenticação:** Login seguro para administradores.
+- **Gestão de Editais:** Cadastro, edição e remoção de editais.
+- **Gestão de Notícias:** Publicação e gerenciamento de notícias e artigos.
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Tecnologias Utilizadas
 
-**Use your preferred IDE**
+O projeto foi construído utilizando as seguintes tecnologias principais:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Frontend:**
+  - [React](https://react.dev/) - Biblioteca JavaScript para construção de interfaces.
+  - [Vite](https://vitejs.dev/) - Ferramenta de build rápida e moderna.
+  - [TypeScript](https://www.typescriptlang.org/) - Superset JavaScript com tipagem estática.
+  - [Tailwind CSS](https://tailwindcss.com/) - Framework CSS utilitário para estilização ágil.
+  - [Shadcn UI](https://ui.shadcn.com/) - Coleção de componentes de interface reutilizáveis.
+  - [Framer Motion](https://www.framer.com/motion/) - Biblioteca para animações fluidas.
+  - [React Router](https://reactrouter.com/) - Gerenciamento de rotas da aplicação.
+  - [TanStack Query](https://tanstack.com/query/latest) - Gerenciamento de estado e requisições assíncronas.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Backend & Serviços:**
+  - [Supabase](https://supabase.com/) - Backend as a Service (BaaS) utilizado para banco de dados (PostgreSQL), autenticação e armazenamento de arquivos.
+  - [Leaflet](https://leafletjs.com/) - Biblioteca para mapas interativos.
 
-Follow these steps:
+## 📦 Pré-requisitos
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Antes de começar, certifique-se de ter instalado em sua máquina:
+- [Node.js](https://nodejs.org/) (versão 18 ou superior recomendada)
+- [NPM](https://www.npmjs.com/) (gerenciador de pacotes)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 🛠️ Como Rodar o Projeto
 
-# Step 3: Install the necessary dependencies.
-npm i
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/juniorcarvalhoce/caritas-sobral.git
+    cd caritas-sobral
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
 
-**Edit a file directly in GitHub**
+3.  **Configuração de Variáveis de Ambiente:**
+    Crie um arquivo `.env` na raiz do projeto com as credenciais do Supabase (baseado no exemplo ou solicite ao administrador):
+    ```env
+    VITE_SUPABASE_URL=sua_url_do_supabase
+    VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
+    ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+4.  **Inicie o servidor de desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
 
-**Use GitHub Codespaces**
+5.  **Acesse o projeto:**
+    O projeto estará rodando em `http://localhost:8080` (ou outra porta indicada no terminal).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📂 Estrutura do Projeto
 
-## What technologies are used for this project?
+- `src/pages`: Páginas da aplicação (Home, Login, Admin, etc).
+- `src/components`: Componentes reutilizáveis (Header, Footer, UI components).
+- `src/lib`: Configurações de serviços externos (Supabase, Utils).
+- `src/hooks`: Hooks personalizados do React.
+- `public`: Arquivos estáticos públicos.
 
-This project is built with:
+## 📄 Licença
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/78c96fb5-1651-48cd-a239-b51883dc68f1) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Todos os direitos reservados à Cáritas Diocesana de Sobral.
