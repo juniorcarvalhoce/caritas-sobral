@@ -11,6 +11,12 @@ import EditaisPublic from "./pages/EditaisPublic";
 import Noticias from "./pages/Noticias";
 import NoticiaDetalhe from "./pages/NoticiaDetalhe";
 
+import AdminLayout from "./pages/AdminLayout";
+import Patrimonio from "./pages/Patrimonio";
+
+import PatrimonioDetalhe from "./pages/PatrimonioDetalhe";
+import PatrimonioRelatorio from "./pages/PatrimonioRelatorio";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -23,10 +29,18 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/editais" element={<EditaisPublic />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Navigate to="/admin/editais" replace />} />
-          <Route path="/admin/editais" element={<Editais />} />
-          <Route path="/admin/noticias" element={<Noticias />} />
           <Route path="/noticia/:id" element={<NoticiaDetalhe />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/editais" replace />} />
+            <Route path="editais" element={<Editais />} />
+            <Route path="noticias" element={<Noticias />} />
+            <Route path="patrimonio" element={<Patrimonio />} />
+            <Route path="patrimonio/:id" element={<PatrimonioDetalhe />} />
+            <Route path="patrimonio/relatorio" element={<PatrimonioRelatorio />} />
+          </Route>
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
