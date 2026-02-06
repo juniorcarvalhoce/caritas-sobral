@@ -17,12 +17,12 @@ const Team = () => {
   const coordenacao = { cargo: "Coordenação Executiva", nome: "José Maria Gomes Vasconcelos" };
 
   const membros = [
-    { tipo: "titular", nome: "Francisco Mendes Silva" },
-    { tipo: "titular", nome: "Maria Luciana Torres Ribeiro" },
-    { tipo: "titular", nome: "Antônio Elizeu Gomes da Silva" },
-    { tipo: "suplente", nome: "Aline Patrícia Nobre Pereira" },
-    { tipo: "suplente", nome: "Francisca Edileusa de Oliveira" },
-    { tipo: "suplente", nome: "Francisca Lucivânia Rodrigues de Sousa" },
+    { tipo: "titular", nome: "Salvelina Mesquita Silva" },
+    { tipo: "titular", nome: "Luiz Souza do Nascimento" },
+    { tipo: "titular", nome: "Samoel Severiano" },
+    { tipo: "suplente", nome: "Maria Aparecida de Almeida Cândido" },
+    { tipo: "suplente", nome: "Cleide Maria Pereira" },
+    { tipo: "suplente", nome: "Maria de Fátima Mesquita" },
   ];
 
   return (
