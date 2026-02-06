@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, User, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 type Noticia = {
   id: string;
@@ -24,6 +26,8 @@ const NoticiaDetalhe = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0); // Scroll to top on component mount
+
     const fetchNoticia = async () => {
       if (!id) return;
       try {
@@ -65,11 +69,11 @@ const NoticiaDetalhe = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header / Navigation */}
-      <div className="container mx-auto py-8 px-4">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)} 
+      <Header />
+      <div className="container mx-auto pt-24 pb-8 px-4">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/', { state: { scrollTo: '#noticias-e-acoes' } })}
           className="mb-6 hover:bg-secondary/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
@@ -108,24 +112,25 @@ const NoticiaDetalhe = () => {
             {/* Featured Image */}
             {noticia.imagem_url && (
               <div className="rounded-xl overflow-hidden mb-10 shadow-lg">
-                <img 
-                  src={noticia.imagem_url} 
-                  alt={noticia.titulo} 
+                <img
+                  src={noticia.imagem_url}
+                  alt={noticia.titulo}
                   className="w-full h-auto object-cover max-h-[600px]"
                 />
               </div>
             )}
 
             {/* Content */}
-            <div 
-              className="prose prose-lg dark:prose-invert max-w-none 
-                prose-headings:font-heading prose-headings:font-bold 
+            <div
+              className="prose prose-lg dark:prose-invert max-w-none
+                prose-headings:font-heading prose-headings:font-bold
                 prose-a:text-primary prose-img:rounded-xl prose-img:shadow-md"
               dangerouslySetInnerHTML={{ __html: noticia.conteudo || "" }}
             />
           </motion.div>
         </article>
       </div>
+      <Footer />
     </div>
   );
 };

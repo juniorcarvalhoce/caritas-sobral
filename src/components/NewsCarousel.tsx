@@ -79,7 +79,7 @@ const NewsCarousel = () => {
   });
 
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden bg-gradient-to-b from-background via-secondary/10 to-background">
+    <section id="noticias-e-acoes" className="py-16 md:py-24 relative overflow-hidden bg-gradient-to-b from-background via-secondary/10 to-background">
       <div className="container mx-auto px-4 relative z-10" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
