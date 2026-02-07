@@ -361,25 +361,7 @@ const Editais = () => {
               Sair
             </Button>
           </div>
-          {/* Navegação entre abas */}
-          <div className="flex gap-2 border-b border-border">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/admin/editais")}
-              className={`rounded-b-none ${location.pathname === "/admin/editais" ? "border-b-2 border-primary" : ""}`}
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Editais
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/admin/noticias")}
-              className={`rounded-b-none ${location.pathname === "/admin/noticias" ? "border-b-2 border-primary" : ""}`}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Notícias
-            </Button>
-          </div>
+
         </div>
       </header>
       <div className="container mx-auto px-4 py-10">

@@ -43,7 +43,7 @@ const PatrimonioRelatorio = () => {
     });
 
     const handleFilterChange = (name: string, value: string) => {
-        setFilters(prev => ({ ...prev, [name]: value }));
+        setFilters(prev => ({ ...prev, [name]: value === "all" ? "" : value }));
     };
 
     const handleGenerateReport = () => {
@@ -103,7 +103,7 @@ const PatrimonioRelatorio = () => {
                             <SelectValue placeholder="Filtrar por tipo..." />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">Todos os tipos</SelectItem>
+                            <SelectItem value="all">Todos os tipos</SelectItem>
                             {tipoOptions.map(opt => (
                                 <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                             ))}
@@ -114,7 +114,7 @@ const PatrimonioRelatorio = () => {
                             <SelectValue placeholder="Filtrar por estado..." />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">Todos os estados</SelectItem>
+                            <SelectItem value="all">Todos os estados</SelectItem>
                             {estadoOptions.map(opt => (
                                 <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                             ))}
