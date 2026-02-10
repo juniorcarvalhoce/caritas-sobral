@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, User, ArrowLeft } from "lucide-react";
+import { Calendar, User, ArrowLeft, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -67,6 +67,18 @@ const NoticiaDetalhe = () => {
 
   if (!noticia) return null;
 
+  const normalizeUrl = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    url = url.trim();
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    if (url.startsWith('//')) {
+      return `https:${url}`;
+    }
+    return `https://${url}`;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -127,6 +139,21 @@ const NoticiaDetalhe = () => {
                 prose-a:text-primary prose-img:rounded-xl prose-img:shadow-md"
               dangerouslySetInnerHTML={{ __html: noticia.conteudo || "" }}
             />
+
+            {/* External Link */}
+            {noticia.url && (
+              <div className="mt-8 text-center">
+                <a
+                  href={normalizeUrl(noticia.url) || '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  Mais detalhes em: {noticia.url}
+                </a>
+              </div>
+            )}
           </motion.div>
         </article>
       </div>

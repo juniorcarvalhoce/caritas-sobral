@@ -1,1 +1,1 @@
-Melhoramento na página do detalhe de noticias e ações
+Fix: Corrigido erro no Select.Item e removidas opções duplicadas na Área Administrativa

@@ -170,21 +170,10 @@ const NewsCarousel = () => {
                             className="w-full justify-center gap-2 group/btn"
                             asChild
                           >
-                            {noticia.url ? (
-                              <a
-                                href={normalizeUrl(noticia.url) || "#"}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Ler mais (Externo)
-                                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                              </a>
-                            ) : (
-                              <Link to={`/noticia/${noticia.id}`}>
-                                Ler mais
-                                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                              </Link>
-                            )}
+                            <Link to={`/noticia/${noticia.id}`}>
+                              Ler mais
+                              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                            </Link>
                           </Button>
                         </CardContent>
                       </Card>
