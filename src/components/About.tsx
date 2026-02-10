@@ -126,9 +126,7 @@ const About = () => {
         >
           <h3 className="font-heading text-2xl font-semibold mb-4">Nossa Missão</h3>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Promover a solidariedade, a justiça social e o desenvolvimento sustentável das comunidades
-            mais vulneráveis, através de ações educativas, produtivas e organizativas que fortaleçam
-            o protagonismo popular e a construção de uma sociedade mais justa e fraterna.
+            Testemunhar e anunciar o Evangelho de Jesus Cristo, defendendo e promovendo toda forma de vida e participando da construção solidária da sociedade do Bem Viver, sinal do Reino de Deus, junto com as pessoas em situação de vulnerabilidade e exclusão social é a missão da Cáritas Diocesana de Sobral.
           </p>
         </motion.div>
       </div>
