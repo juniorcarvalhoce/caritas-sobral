@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Editais from "./pages/Editais";
 import EditaisPublic from "./pages/EditaisPublic";
+import EditalDetalhe from "./pages/EditalDetalhe";
 import Noticias from "./pages/Noticias";
 import NoticiaDetalhe from "./pages/NoticiaDetalhe";
 import { useQuery } from "@tanstack/react-query";
@@ -21,32 +22,6 @@ import PatrimonioRelatorio from "./pages/PatrimonioRelatorio";
 
 const queryClient = new QueryClient();
 
-// Componente para redirecionar para o edital
-const EditalRedirect = () => {
-  const { id } = useParams();
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["edital-redirect", id],
-    queryFn: async () => {
-      if (!id) throw new Error("ID do edital não encontrado");
-      const { data, error } = await supabase
-        .from("editais")
-        .select("documento_url")
-        .eq("id", id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
-  if (isError || !data?.documento_url) return <NotFound />;
-
-  // Redireciona para o URL do arquivo no Supabase
-  window.location.href = data.documento_url;
-  return null;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -56,7 +31,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/editais" element={<EditaisPublic />} />
-          <Route path="/edital/:id" element={<EditalRedirect />} />
+          <Route path="/edital/:id" element={<EditalDetalhe />} />
           <Route path="/login" element={<Login />} />
           <Route path="/noticia/:id" element={<NoticiaDetalhe />} />
 

@@ -29,6 +29,14 @@ type Edital = {
   updated_at: string | null;
 };
 
+type EditalAnexo = {
+  id: string;
+  edital_id: string;
+  descricao: string;
+  arquivo_url: string;
+  created_at: string;
+};
+
 const statusOptions = ["Aberto", "Em andamento", "Finalizado", "Cancelado"] as const;
 
 const editalSchema = z.object({
@@ -36,7 +44,6 @@ const editalSchema = z.object({
   data_publicacao: z.string().min(1, "Data de publicação é obrigatória"),
   status: z.enum(statusOptions),
   data_finalizacao: z.string().optional().nullable(),
-  documento_url: z.string().url("URL inválida").optional().nullable().or(z.literal("")),
   descricao: z.string().optional().nullable(),
 });
 
@@ -54,8 +61,30 @@ const Editais = () => {
   const [page, setPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Edital | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+
+  // Anexos
+  const [anexos, setAnexos] = useState<Array<{
+    id?: string;
+    descricao: string;
+    arquivo: File | null;
+    arquivo_url?: string;
+    remover?: boolean;
+  }>>([]);
+
+  // Para buscar anexos existentes quando editando
+  const { data: anexosExistentes } = useQuery({
+    queryKey: ["editais-anexos", editing?.id],
+    enabled: !!editing?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("edital_anexos")
+        .select("*")
+        .eq("edital_id", editing!.id);
+      if (error) throw error;
+      return data as EditalAnexo[];
+    },
+  });
 
   // Auth guard
   useEffect(() => {
@@ -127,47 +156,96 @@ const Editais = () => {
       data_publicacao: "",
       status: "Aberto",
       data_finalizacao: "",
-      documento_url: "",
       descricao: "",
     });
     setEditing(null);
-    setSelectedFile(null);
+    setAnexos([]);
   };
 
+  // Efeito para carregar anexos existentes quando editando
+  useEffect(() => {
+    if (anexosExistentes) {
+      setAnexos(anexosExistentes.map(anexo => ({
+        id: anexo.id,
+        descricao: anexo.descricao,
+        arquivo: null,
+        arquivo_url: anexo.arquivo_url,
+        remover: false,
+      })));
+    }
+  }, [anexosExistentes]);
+
   const uploadPdfAndGetUrl = async (file: File) => {
-    const path = `edital-${Date.now()}-${(crypto?.randomUUID?.() || Math.random().toString(36).slice(2)).slice(0, 8)}.pdf`;
+    const path = `edital-anexo-${Date.now()}-${(crypto?.randomUUID?.() || Math.random().toString(36).slice(2)).slice(0, 8)}.${file.name.split('.').pop()}`;
     const { error: uploadError } = await supabase.storage
       .from("editais")
-      .upload(path, file, { contentType: "application/pdf", cacheControl: "3600", upsert: false });
+      .upload(path, file, { 
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: false 
+      });
     if (uploadError) throw uploadError;
     const { data: pub } = supabase.storage.from("editais").getPublicUrl(path);
     return pub.publicUrl;
   };
 
+  // Funções para gerenciar anexos
+  const adicionarAnexo = () => {
+    setAnexos([...anexos, { descricao: "", arquivo: null, remover: false }]);
+  };
+
+  const atualizarAnexo = (index: number, campo: "descricao" | "arquivo", valor: any) => {
+    const novosAnexos = [...anexos];
+    novosAnexos[index][campo] = valor;
+    setAnexos(novosAnexos);
+  };
+
+  const removerAnexo = (index: number) => {
+    const novosAnexos = [...anexos];
+    if (novosAnexos[index].id) {
+      novosAnexos[index].remover = true;
+    } else {
+      novosAnexos.splice(index, 1);
+    }
+    setAnexos(novosAnexos);
+  };
+
   const createMutation = useMutation({
-    mutationFn: async ({ values, file }: { values: EditalFormValues; file: File }) => {
-      const fileUrl = await uploadPdfAndGetUrl(file);
-      
+    mutationFn: async ({ values }: { values: EditalFormValues }) => {
       // Determina o status final
       let statusFinal = values.status;
       if (values.data_finalizacao && podeUsarEmAndamento(values.data_finalizacao)) {
-        // Se hoje > data_finalizacao e não foi escolhido "Em andamento" ou "Cancelado", muda para "Finalizado"
         if (values.status !== "Em andamento" && values.status !== "Cancelado") {
           statusFinal = "Finalizado";
         }
-        // Se escolheu "Em andamento", mantém como está
       }
-      
+
+      // Cria o edital
       const insertPayload = {
         nome: values.nome,
         data_publicacao: values.data_publicacao,
         status: statusFinal,
         data_finalizacao: values.data_finalizacao ? values.data_finalizacao : null,
-        documento_url: fileUrl,
         descricao: values.descricao ?? null,
       };
-      const { error } = await supabase.from("editais").insert(insertPayload);
+      const { data: editalCriado, error } = await supabase
+        .from("editais")
+        .insert(insertPayload)
+        .select("id")
+        .single();
       if (error) throw error;
+
+      // Cria os anexos
+      for (const anexo of anexos) {
+        if (!anexo.arquivo || !anexo.descricao) continue;
+        const arquivoUrl = await uploadPdfAndGetUrl(anexo.arquivo);
+        const { error: errorAnexo } = await supabase.from("edital_anexos").insert({
+          edital_id: editalCriado.id,
+          descricao: anexo.descricao,
+          arquivo_url: arquivoUrl,
+        });
+        if (errorAnexo) throw errorAnexo;
+      }
     },
     onSuccess: () => {
       toast.success("Edital criado com sucesso");
@@ -181,34 +259,54 @@ const Editais = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ values, file }: { values: EditalFormValues; file?: File }) => {
+    mutationFn: async ({ values }: { values: EditalFormValues }) => {
       if (!editing) return;
-      let finalUrl = editing.documento_url ?? null;
-      if (file) {
-        finalUrl = await uploadPdfAndGetUrl(file);
-      }
-      
+
       // Determina o status final
       let statusFinal = values.status;
       if (values.data_finalizacao && podeUsarEmAndamento(values.data_finalizacao)) {
-        // Se hoje > data_finalizacao e não foi escolhido "Em andamento" ou "Cancelado", muda para "Finalizado"
         if (values.status !== "Em andamento" && values.status !== "Cancelado") {
           statusFinal = "Finalizado";
         }
-        // Se escolheu "Em andamento", mantém como está
       }
-      
+
+      // Atualiza o edital
       const updatePayload = {
         nome: values.nome,
         data_publicacao: values.data_publicacao,
         status: statusFinal,
         data_finalizacao: values.data_finalizacao ? values.data_finalizacao : null,
-        documento_url: finalUrl,
         descricao: values.descricao ?? null,
         updated_at: new Date().toISOString(),
       };
-      const { error } = await supabase.from("editais").update(updatePayload).eq("id", editing.id);
+      const { error } = await supabase
+        .from("editais")
+        .update(updatePayload)
+        .eq("id", editing.id);
       if (error) throw error;
+
+      // Remove os anexos marcados para remoção
+      const anexosParaRemover = anexos.filter(a => a.remover && a.id);
+      for (const anexo of anexosParaRemover) {
+        const { error: errorRemover } = await supabase
+          .from("edital_anexos")
+          .delete()
+          .eq("id", anexo.id);
+        if (errorRemover) throw errorRemover;
+      }
+
+      // Adiciona novos anexos
+      const novosAnexos = anexos.filter(a => !a.id && !a.remover && a.arquivo && a.descricao);
+      for (const anexo of novosAnexos) {
+        if (!anexo.arquivo || !anexo.descricao) continue;
+        const arquivoUrl = await uploadPdfAndGetUrl(anexo.arquivo);
+        const { error: errorAnexo } = await supabase.from("edital_anexos").insert({
+          edital_id: editing.id,
+          descricao: anexo.descricao,
+          arquivo_url: arquivoUrl,
+        });
+        if (errorAnexo) throw errorAnexo;
+      }
     },
     onSuccess: () => {
       toast.success("Edital atualizado");
@@ -237,13 +335,9 @@ const Editais = () => {
 
   const onSubmit = async (values: EditalFormValues) => {
     if (editing) {
-      await updateMutation.mutateAsync({ values, file: selectedFile ?? undefined });
+      await updateMutation.mutateAsync({ values });
     } else {
-      if (!selectedFile) {
-        toast.error("Anexe o PDF do edital (.pdf)");
-        return;
-      }
-      await createMutation.mutateAsync({ values, file: selectedFile });
+      await createMutation.mutateAsync({ values });
     }
   };
 
@@ -259,10 +353,8 @@ const Editais = () => {
       data_publicacao: item.data_publicacao?.slice(0, 10) ?? "",
       status: item.status,
       data_finalizacao: item.data_finalizacao?.slice(0, 10) ?? "",
-      documento_url: item.documento_url ?? "",
       descricao: item.descricao ?? "",
     });
-    setSelectedFile(null);
     setIsDialogOpen(true);
   };
 
@@ -417,28 +509,27 @@ const Editais = () => {
                     <TableHead>Publicação</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Finalização</TableHead>
-                    <TableHead>Documento</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading && (
                     <TableRow>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={5}>
                         <div className="py-6 text-center text-muted-foreground">Carregando...</div>
                       </TableCell>
                     </TableRow>
                   )}
                   {isError && (
                     <TableRow>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={5}>
                         <div className="py-6 text-center text-destructive">Erro ao carregar os editais</div>
                       </TableCell>
                     </TableRow>
                   )}
                   {!isLoading && (data?.items?.length ?? 0) === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={5}>
                         <div className="py-6 text-center text-muted-foreground">Nenhum edital encontrado</div>
                       </TableCell>
                     </TableRow>
@@ -449,24 +540,11 @@ const Editais = () => {
                       <TableCell>{formatDate(item.data_publicacao)}</TableCell>
                       <TableCell>{item.status}</TableCell>
                       <TableCell>{formatDate(item.data_finalizacao)}</TableCell>
-                      <TableCell>
-                        {item.documento_url ? (
-                          <a
-                            href={item.documento_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-primary hover:underline"
-                          >
-                            <FileText className="w-4 h-4" />
-                            Abrir
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/edital/${item.id}`)}>
+                            <Eye className="w-4 h-4" /> Ver
+                          </Button>
                           <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>
                             <Pencil className="w-4 h-4" /> Editar
                           </Button>
@@ -520,11 +598,11 @@ const Editais = () => {
             if (!o) resetForm();
           }}
         >
-          <DialogContent className="glass rounded-3xl">
+          <DialogContent className="glass rounded-3xl max-w-3xl">
             <DialogHeader>
               <DialogTitle>{editing ? "Editar Edital" : "Novo Edital"}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium mb-1">Nome</label>
                 <Input {...form.register("nome")} className="glass-dark" placeholder="Nome do edital" />
@@ -551,11 +629,10 @@ const Editais = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {statusOptions.map((s) => {
-                        // Desabilita "Em andamento" se não puder usar
                         const desabilitado = s === "Em andamento" && !podeUsarEmAndamento(form.watch("data_finalizacao"));
                         return (
-                          <SelectItem 
-                            key={s} 
+                          <SelectItem
+                            key={s}
                             value={s}
                             disabled={desabilitado}
                             className={desabilitado ? "opacity-50 cursor-not-allowed" : ""}
@@ -578,13 +655,12 @@ const Editais = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Data de finalização</label>
-                  <Input 
-                    type="date" 
-                    {...form.register("data_finalizacao")} 
+                  <Input
+                    type="date"
+                    {...form.register("data_finalizacao")}
                     className="glass-dark"
                     onChange={(e) => {
                       form.setValue("data_finalizacao", e.target.value);
-                      // Se hoje > data_finalizacao e o status atual não é "Em andamento" nem "Cancelado", muda para "Finalizado"
                       if (e.target.value && podeUsarEmAndamento(e.target.value)) {
                         const statusAtual = form.watch("status");
                         if (statusAtual !== "Em andamento" && statusAtual !== "Cancelado") {
@@ -597,37 +673,72 @@ const Editais = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Documento PDF</label>
-                <Input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-                  className="glass-dark"
-                />
-                <div className="text-xs text-muted-foreground mt-1">
-                  {selectedFile ? (
-                    <>Arquivo selecionado: {selectedFile.name}</>
-                  ) : editing && form.getValues("documento_url") ? (
-                    <>
-                      Atual:{" "}
-                      <a
-                        href={form.getValues("documento_url") || undefined}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary underline"
-                      >
-                        abrir PDF
-                      </a>
-                    </>
-                  ) : (
-                    <>Apenas arquivos .pdf</>
-                  )}
-                </div>
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium mb-1">Descrição</label>
                 <Textarea {...form.register("descricao")} className="glass-dark" rows={4} placeholder="Detalhes do edital" />
+              </div>
+
+              {/* Anexos */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium">Anexos</label>
+                  <Button type="button" variant="ghost" onClick={adicionarAnexo} className="text-xs">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adicionar anexo
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {anexos.map((anexo, index) => !anexo.remover && (
+                    <Card key={index} className="border-primary/20">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs text-muted-foreground mb-1">Descrição</label>
+                            <Input
+                              value={anexo.descricao}
+                              onChange={(e) => atualizarAnexo(index, "descricao", e.target.value)}
+                              placeholder="Ex: Edital principal"
+                              className="glass-dark"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-muted-foreground mb-1">Arquivo</label>
+                            {anexo.arquivo_url && !anexo.arquivo ? (
+                              <div className="flex items-center gap-2 text-sm">
+                                <FileText className="w-4 h-4 text-primary" />
+                                <a href={anexo.arquivo_url} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                                  Arquivo existente
+                                </a>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => atualizarAnexo(index, "arquivo", null)}
+                                >
+                                  Substituir
+                                </Button>
+                              </div>
+                            ) : (
+                              <Input
+                                type="file"
+                                onChange={(e) => atualizarAnexo(index, "arquivo", e.target.files?.[0] ?? null)}
+                                className="glass-dark"
+                              />
+                            )}
+                            {anexo.arquivo && (
+                              <p className="text-xs text-muted-foreground mt-1">Arquivo selecionado: {anexo.arquivo.name}</p>
+                            )}
+                          </div>
+                          <div className="flex justify-end">
+                            <Button type="button" variant="destructive" size="sm" onClick={() => removerAnexo(index)}>
+                              <Trash2 className="w-3 h-3 mr-1" />
+                              Remover
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
 
               <DialogFooter className="flex gap-2">

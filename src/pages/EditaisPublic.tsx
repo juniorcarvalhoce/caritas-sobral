@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { FileDown, Search } from "lucide-react";
+import { FileText, Search, Eye } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 type Edital = {
@@ -72,6 +73,7 @@ const getStatusDinamico = (edital: Edital): Edital["status"] => {
 };
 
 const EditaisPublic = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -239,14 +241,10 @@ const EditaisPublic = () => {
                       <Button
                         variant="ghost"
                         className="gap-2"
-                        asChild
-                        disabled={!edital.documento_url}
-                        title={edital.documento_url ? "Baixar edital" : "Documento não disponível"}
+                        onClick={() => navigate(`/edital/${edital.id}`)}
                       >
-                        <a href={`/edital/${edital.id}`} target="_blank" rel="noreferrer">
-                          <FileDown className="w-5 h-5" />
-                          <span className="sr-only">Baixar</span>
-                        </a>
+                        <Eye className="w-5 h-5" />
+                        Ver anexos
                       </Button>
                     </div>
                   </CardContent>
