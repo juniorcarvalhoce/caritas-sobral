@@ -243,7 +243,7 @@ const EditaisPublic = () => {
                         disabled={!edital.documento_url}
                         title={edital.documento_url ? "Baixar edital" : "Documento não disponível"}
                       >
-                        <a href={edital.documento_url ?? undefined} target="_blank" rel="noreferrer">
+                        <a href={`/edital/${edital.id}`} target="_blank" rel="noreferrer">
                           <FileDown className="w-5 h-5" />
                           <span className="sr-only">Baixar</span>
                         </a>
