@@ -598,8 +598,8 @@ const Editais = () => {
             if (!o) resetForm();
           }}
         >
-          <DialogContent className="glass rounded-3xl max-w-3xl">
-            <DialogHeader>
+          <DialogContent className="glass rounded-3xl max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader className="sticky top-0 bg-background/80 backdrop-blur z-10 pb-4">
               <DialogTitle>{editing ? "Editar Edital" : "Novo Edital"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -681,91 +681,90 @@ const Editais = () => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium">Anexos</label>
-                  <Button type="button" variant="ghost" onClick={adicionarAnexo} className="text-xs">
-                    <Plus className="w-4 h-4 mr-2" />
+                  <Button type="button" variant="ghost" onClick={adicionarAnexo} className="text-xs h-8 px-2">
+                    <Plus className="w-3 h-3 mr-1" />
                     Adicionar anexo
                   </Button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
                   {anexos.map((anexo, index) => !anexo.remover && (
-                    <Card key={index} className="border-primary/20">
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs text-muted-foreground mb-1">Descrição</label>
-                            <Input
-                              value={anexo.descricao}
-                              onChange={(e) => atualizarAnexo(index, "descricao", e.target.value)}
-                              placeholder="Ex: Edital principal"
-                              className="glass-dark"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs text-muted-foreground mb-1">Arquivo</label>
-                            {anexo.arquivo_url && !anexo.arquivo ? (
-                              <div className="flex items-center gap-2 text-sm">
-                                <FileText className="w-4 h-4 text-primary" />
-                                <a href={anexo.arquivo_url} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                                  Arquivo existente
-                                </a>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => atualizarAnexo(index, "arquivo", null)}
-                                >
-                                  Substituir
-                                </Button>
-                              </div>
-                            ) : (
-                              <Input
-                                type="file"
-                                onChange={(e) => atualizarAnexo(index, "arquivo", e.target.files?.[0] ?? null)}
-                                className="glass-dark"
-                              />
-                            )}
-                            {anexo.arquivo && (
-                              <p className="text-xs text-muted-foreground mt-1">Arquivo selecionado: {anexo.arquivo.name}</p>
-                            )}
-                          </div>
-                          <div className="flex justify-end">
-                            <Button type="button" variant="destructive" size="sm" onClick={() => removerAnexo(index)}>
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              Remover
-                            </Button>
-                          </div>
+                    <div key={index} className="border border-border rounded-lg p-3 bg-background/50">
+                      <div className="space-y-2">
+                        <div>
+                          <label className="block text-xs text-muted-foreground mb-1">Descrição</label>
+                          <Input
+                            value={anexo.descricao}
+                            onChange={(e) => atualizarAnexo(index, "descricao", e.target.value)}
+                            placeholder="Ex: Edital principal"
+                            className="glass-dark h-8 text-sm"
+                          />
                         </div>
-                      </CardContent>
-                    </Card>
+                        <div>
+                          <label className="block text-xs text-muted-foreground mb-1">Arquivo</label>
+                          {anexo.arquivo_url && !anexo.arquivo ? (
+                            <div className="flex items-center gap-2 text-sm">
+                              <FileText className="w-3 h-3 text-primary" />
+                              <a href={anexo.arquivo_url} target="_blank" rel="noreferrer" className="text-primary hover:underline text-sm">
+                                Arquivo existente
+                              </a>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => atualizarAnexo(index, "arquivo", null)}
+                              >
+                                Substituir
+                              </Button>
+                            </div>
+                          ) : (
+                            <Input
+                              type="file"
+                              onChange={(e) => atualizarAnexo(index, "arquivo", e.target.files?.[0] ?? null)}
+                              className="glass-dark h-8 text-xs"
+                            />
+                          )}
+                          {anexo.arquivo && (
+                            <p className="text-xs text-muted-foreground mt-1">Arquivo: {anexo.arquivo.name}</p>
+                          )}
+                        </div>
+                        <div className="flex justify-end pt-1">
+                          <Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-xs" onClick={() => removerAnexo(index)}>
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Remover
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
 
-              <DialogFooter className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" variant="default" disabled={createMutation.isPending || updateMutation.isPending}>
-                  {editing ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Pencil className="w-4 h-4" />
-                      Salvar alterações
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-2">
-                      <Plus className="w-4 h-4" />
-                      Criar edital
-                    </span>
-                  )}
-                </Button>
-              </DialogFooter>
             </form>
+            <DialogFooter className="sticky bottom-0 bg-background/80 backdrop-blur pt-4 z-10">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setIsDialogOpen(false);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" variant="default" disabled={createMutation.isPending || updateMutation.isPending} onClick={form.handleSubmit(onSubmit)}>
+                {editing ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Pencil className="w-4 h-4" />
+                    Salvar alterações
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Criar edital
+                  </span>
+                )}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
