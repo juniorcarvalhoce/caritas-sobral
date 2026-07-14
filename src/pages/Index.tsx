@@ -9,8 +9,9 @@ import InteractiveMap from "@/components/InteractiveMap";
 import Projects from "@/components/Projects";
 import CearaSemFome from "@/components/CearaSemFome";
 import Collaborate from "@/components/Collaborate";
-import Team from "@/components/Team";
-import Contact from "@/components/Contact";
+import Team from "../components/Team";
+import Contact from "../components/Contact";
+import { SuaNotaTemValor } from "../components/SuaNotaTemValor";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -43,8 +44,9 @@ const Index = () => {
         <InteractiveMap />
         <Projects />
         <CearaSemFome />
-        <Collaborate />
         <Team />
+          <Collaborate />
+          <SuaNotaTemValor />
         <Contact />
       </motion.main>
 

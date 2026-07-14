@@ -1,1 +1,1 @@
-Feat: Melhorias na exibição de links externos em notícias. O carrossel agora sempre direciona para a página de detalhes interna, e o link externo é exibido no final do conteúdo da notícia.
+feat: Update mission text in About section
