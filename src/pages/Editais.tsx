@@ -294,6 +294,15 @@ const Editais = () => {
         if (errorUpd) throw errorUpd;
       }
 
+      const anexosAtualizarDescricao = anexos.filter(a => a.id && !a.remover && !a.arquivo && a.descricao);
+      for (const anexo of anexosAtualizarDescricao) {
+        const { error: errorUpd } = await supabase
+          .from("edital_anexos")
+          .update({ descricao: anexo.descricao })
+          .eq("id", anexo.id);
+        if (errorUpd) throw errorUpd;
+      }
+
       const novosAnexos = anexos.filter(a => !a.id && !a.remover && a.arquivo && a.descricao);
       for (const anexo of novosAnexos) {
         if (!anexo.arquivo || !anexo.descricao) continue;
