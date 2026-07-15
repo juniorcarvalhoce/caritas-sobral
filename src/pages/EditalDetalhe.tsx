@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import Header from "@/components/Header";
@@ -63,6 +63,10 @@ const getFileIcon = (url: string) => {
 const EditalDetalhe = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const { data: edital, isLoading: isLoadingEdital, isError: isErrorEdital } = useQuery({
     queryKey: ["edital-detalhe", id],
