@@ -79,7 +79,8 @@ const Editais = () => {
       const { data, error } = await supabase
         .from("edital_anexos")
         .select("*")
-        .eq("edital_id", editing!.id);
+        .eq("edital_id", editing!.id)
+        .order("created_at");
       if (error) throw error;
       return data as EditalAnexo[];
     },
