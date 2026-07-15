@@ -206,7 +206,7 @@ const EditalDetalhe = () => {
                               {getFileIcon(anexo.arquivo_url)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-lg md:text-xl text-foreground group-hover:text-primary transition-colors truncate">
+                              <h3 className="font-semibold text-lg md:text-xl text-foreground group-hover:text-primary transition-colors">
                                 {anexo.descricao}
                               </h3>
                               <p className="text-sm text-muted-foreground mt-1">

@@ -298,11 +298,11 @@ const EditaisPublic = () => {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-6">
-                        <CardTitle className="text-xl font-semibold mb-2 line-clamp-2">
+                        <CardTitle className="text-xl font-semibold mb-2">
                           {edital.nome}
                         </CardTitle>
                         {edital.descricao && (
-                          <p className="text-muted-foreground mt-2 line-clamp-3 text-sm">
+                          <p className="text-muted-foreground mt-2 text-sm">
                             {edital.descricao}
                           </p>
                         )}
