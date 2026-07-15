@@ -5,22 +5,23 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, FileText, ExternalLink, Shield, LogOut, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Eye, Shield, LogOut, Upload, X, File, CheckCircle, Clock, AlertCircle, Calendar, MoreVertical, ArrowRight, Trash } from "lucide-react";
 import logoCaritas from "@/assets/logo-caritas.png";
 
 type Edital = {
   id: string;
   nome: string;
-  data_publicacao: string; // date string (YYYY-MM-DD)
+  data_publicacao: string;
   status: "Aberto" | "Em andamento" | "Finalizado" | "Cancelado";
   data_finalizacao: string | null;
   documento_url: string | null;
@@ -63,7 +64,6 @@ const Editais = () => {
   const [editing, setEditing] = useState<Edital | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
-  // Anexos
   const [anexos, setAnexos] = useState<Array<{
     id?: string;
     descricao: string;
@@ -72,7 +72,6 @@ const Editais = () => {
     remover?: boolean;
   }>>([]);
 
-  // Para buscar anexos existentes quando editando
   const { data: anexosExistentes } = useQuery({
     queryKey: ["editais-anexos", editing?.id],
     enabled: !!editing?.id,
@@ -86,7 +85,6 @@ const Editais = () => {
     },
   });
 
-  // Auth guard
   useEffect(() => {
     const check = async () => {
       const { data } = await supabase.auth.getSession();
@@ -122,13 +120,12 @@ const Editais = () => {
 
       const { data, error, count } = await q;
       if (error) throw error;
-      
-      // Aplica o status dinâmico baseado na data de finalização
+
       const itemsComStatus = (data ?? []).map((item: Edital) => ({
         ...item,
         status: getStatusDinamico(item),
       }));
-      
+
       return { items: itemsComStatus as Edital[], count: count ?? 0 };
     },
   });
@@ -145,7 +142,6 @@ const Editais = () => {
       data_publicacao: "",
       status: "Aberto",
       data_finalizacao: "",
-      documento_url: "",
       descricao: "",
     },
   });
@@ -162,7 +158,6 @@ const Editais = () => {
     setAnexos([]);
   };
 
-  // Efeito para carregar anexos existentes quando editando
   useEffect(() => {
     if (anexosExistentes) {
       setAnexos(anexosExistentes.map(anexo => ({
@@ -189,7 +184,6 @@ const Editais = () => {
     return pub.publicUrl;
   };
 
-  // Funções para gerenciar anexos
   const adicionarAnexo = () => {
     setAnexos([...anexos, { descricao: "", arquivo: null, remover: false }]);
   };
@@ -212,7 +206,6 @@ const Editais = () => {
 
   const createMutation = useMutation({
     mutationFn: async ({ values }: { values: EditalFormValues }) => {
-      // Determina o status final
       let statusFinal = values.status;
       if (values.data_finalizacao && podeUsarEmAndamento(values.data_finalizacao)) {
         if (values.status !== "Em andamento" && values.status !== "Cancelado") {
@@ -220,7 +213,6 @@ const Editais = () => {
         }
       }
 
-      // Cria o edital
       const insertPayload = {
         nome: values.nome,
         data_publicacao: values.data_publicacao,
@@ -235,7 +227,6 @@ const Editais = () => {
         .single();
       if (error) throw error;
 
-      // Cria os anexos
       for (const anexo of anexos) {
         if (!anexo.arquivo || !anexo.descricao) continue;
         const arquivoUrl = await uploadPdfAndGetUrl(anexo.arquivo);
@@ -262,7 +253,6 @@ const Editais = () => {
     mutationFn: async ({ values }: { values: EditalFormValues }) => {
       if (!editing) return;
 
-      // Determina o status final
       let statusFinal = values.status;
       if (values.data_finalizacao && podeUsarEmAndamento(values.data_finalizacao)) {
         if (values.status !== "Em andamento" && values.status !== "Cancelado") {
@@ -270,7 +260,6 @@ const Editais = () => {
         }
       }
 
-      // Atualiza o edital
       const updatePayload = {
         nome: values.nome,
         data_publicacao: values.data_publicacao,
@@ -285,7 +274,6 @@ const Editais = () => {
         .eq("id", editing.id);
       if (error) throw error;
 
-      // Remove os anexos marcados para remoção
       const anexosParaRemover = anexos.filter(a => a.remover && a.id);
       for (const anexo of anexosParaRemover) {
         const { error: errorRemover } = await supabase
@@ -295,7 +283,17 @@ const Editais = () => {
         if (errorRemover) throw errorRemover;
       }
 
-      // Adiciona novos anexos
+      const anexosSubstituir = anexos.filter(a => a.id && !a.remover && a.arquivo && a.descricao);
+      for (const anexo of anexosSubstituir) {
+        if (!anexo.arquivo) continue;
+        const arquivoUrl = await uploadPdfAndGetUrl(anexo.arquivo);
+        const { error: errorUpd } = await supabase
+          .from("edital_anexos")
+          .update({ arquivo_url: arquivoUrl, descricao: anexo.descricao })
+          .eq("id", anexo.id);
+        if (errorUpd) throw errorUpd;
+      }
+
       const novosAnexos = anexos.filter(a => !a.id && !a.remover && a.arquivo && a.descricao);
       for (const anexo of novosAnexos) {
         if (!anexo.arquivo || !anexo.descricao) continue;
@@ -358,7 +356,6 @@ const Editais = () => {
     setIsDialogOpen(true);
   };
 
-  // Função para verificar se pode usar "Em andamento"
   const podeUsarEmAndamento = (dataFinalizacao?: string | null): boolean => {
     if (!dataFinalizacao) return false;
     
@@ -369,7 +366,6 @@ const Editais = () => {
     const hojeSemHora = new Date(hojeBrasil.getFullYear(), hojeBrasil.getMonth(), hojeBrasil.getDate());
     const finalizacaoSemHora = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     
-    // Só permite "Em andamento" se hoje > data de finalização
     return hojeSemHora > finalizacaoSemHora;
   };
 
@@ -386,7 +382,6 @@ const Editais = () => {
 
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return "—";
-    // Trata a data como local (YYYY-MM-DD) para evitar problemas de timezone
     const [year, month, day] = dateStr.split('T')[0].split('-');
     if (!year || !month || !day) return "—";
     const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -394,46 +389,65 @@ const Editais = () => {
     return d.toLocaleDateString("pt-BR");
   };
 
-  // Função para calcular o status dinâmico baseado na data de finalização
   const getStatusDinamico = (edital: Edital): Edital["status"] => {
-    // Se o status for "Cancelado", mantém como está
     if (edital.status === "Cancelado") {
       return "Cancelado";
     }
 
-    // Se não houver data de finalização, retorna o status original
     if (!edital.data_finalizacao) {
       return edital.status;
     }
 
-    // Obtém a data de hoje no timezone do Brasil (America/Sao_Paulo)
     const hojeBrasil = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
     
-    // Trata a data de finalização como local (YYYY-MM-DD)
     const [year, month, day] = edital.data_finalizacao.split('T')[0].split('-');
     if (!year || !month || !day) return edital.status;
     
-    // Compara apenas as datas (sem horas)
     const hojeSemHora = new Date(hojeBrasil.getFullYear(), hojeBrasil.getMonth(), hojeBrasil.getDate());
     const finalizacaoSemHora = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
-    // Se hoje for maior que a data de finalização (limite para inscrição)
     if (hojeSemHora > finalizacaoSemHora) {
-      // Se o usuário definiu manualmente como "Em andamento", mantém
       if (edital.status === "Em andamento") {
         return "Em andamento";
       }
-      // Caso contrário, muda automaticamente para "Finalizado"
       return "Finalizado";
     }
 
-    // Se hoje for menor ou igual à data de finalização, mantém o status original
     return edital.status;
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Aberto":
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case "Em andamento":
+        return <Clock className="w-4 h-4 text-yellow-600" />;
+      case "Finalizado":
+        return <FileText className="w-4 h-4 text-gray-600" />;
+      case "Cancelado":
+        return <AlertCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <FileText className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Aberto":
+        return "bg-green-50 text-green-700 ring-green-600/20";
+      case "Em andamento":
+        return "bg-yellow-50 text-yellow-700 ring-yellow-600/20";
+      case "Finalizado":
+        return "bg-gray-50 text-gray-700 ring-gray-600/20";
+      case "Cancelado":
+        return "bg-red-50 text-red-700 ring-red-600/20";
+      default:
+        return "bg-gray-50 text-gray-700 ring-gray-600/20";
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Cabeçalho com logo, navegação e logout */}
       <header className="w-full bg-card/80 shadow-lg mb-8">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -453,62 +467,62 @@ const Editais = () => {
               Sair
             </Button>
           </div>
-
         </div>
       </header>
       <div className="container mx-auto px-4 py-10">
         <Card className="glass rounded-3xl shadow-2xl">
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6">
             <CardTitle className="font-heading text-2xl">Editais</CardTitle>
-            <Button onClick={openCreate} variant="default" className="gap-2">
-              <Plus className="w-4 h-4" />
-              Novo Edital
-            </Button>
+            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+              <Input
+                placeholder="Buscar por nome..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="glass-dark"
+              />
+              <Select
+                value={statusFilter ?? "all"}
+                onValueChange={(v) => {
+                  setStatusFilter(v === "all" ? undefined : v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="glass-dark w-full md:w-[200px]">
+                  <SelectValue placeholder="Filtrar status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {statusOptions.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(s)}
+                        <span>{s}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={openCreate} variant="default" className="gap-2 flex-shrink-0">
+                <Plus className="w-4 h-4" />
+                Novo Edital
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between mb-6">
-              <div className="flex gap-3 w-full md:w-auto">
-                <Input
-                  placeholder="Buscar por nome..."
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                  className="glass-dark"
-                />
-                <Select
-                  value={statusFilter ?? "all"}
-                  onValueChange={(v) => {
-                    setStatusFilter(v === "all" ? undefined : v);
-                    setPage(1);
-                  }}
-                >
-                  <SelectTrigger className="w-[220px] glass-dark">
-                    <SelectValue placeholder="Filtrar status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {statusOptions.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {data?.count ?? 0} resultado(s)
-              </div>
+          <CardContent className="space-y-6">
+            <div className="text-sm text-muted-foreground">
+              {data?.count ?? 0} resultado(s)
             </div>
             <div className="overflow-hidden rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Publicação</TableHead>
+                    <TableHead className="hidden md:table-cell">Publicação</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Finalização</TableHead>
+                    <TableHead className="hidden md:table-cell">Finalização</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -535,25 +549,35 @@ const Editais = () => {
                     </TableRow>
                   )}
                   {(data?.items ?? []).map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.nome}</TableCell>
-                      <TableCell>{formatDate(item.data_publicacao)}</TableCell>
-                      <TableCell>{item.status}</TableCell>
-                      <TableCell>{formatDate(item.data_finalizacao)}</TableCell>
+                    <TableRow key={item.id} className="group">
+                      <TableCell className="font-medium max-w-xs lg:max-w-md truncate">{item.nome}</TableCell>
+                      <TableCell className="hidden md:table-cell">{formatDate(item.data_publicacao)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(item.status)}
+                          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ring-1 ring-inset ${getStatusColor(item.status)}`}>
+                            {item.status}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{formatDate(item.data_finalizacao)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button variant="ghost" size="sm" onClick={() => navigate(`/edital/${item.id}`)}>
-                            <Eye className="w-4 h-4" /> Ver
+                            <Eye className="w-4 h-4" />
+                            <span className="hidden md:inline ml-1">Ver</span>
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>
-                            <Pencil className="w-4 h-4" /> Editar
+                            <Pencil className="w-4 h-4" />
+                            <span className="hidden md:inline ml-1">Editar</span>
                           </Button>
                           <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => setDeleteDialog({ open: true, id: item.id })}
                           >
-                            <Trash2 className="w-4 h-4" /> Deletar
+                            <Trash2 className="w-4 h-4" />
+                            <span className="hidden md:inline ml-1">Deletar</span>
                           </Button>
                         </div>
                       </TableCell>
@@ -562,35 +586,36 @@ const Editais = () => {
                 </TableBody>
               </Table>
             </div>
-            <div className="mt-6">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setPage((p) => Math.max(1, p - 1));
-                      }}
-                    />
-                  </PaginationItem>
-                  <div className="px-3 text-sm text-muted-foreground">Página {page} de {totalPages}</div>
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setPage((p) => Math.min(totalPages, p + 1));
-                      }}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
+            {data && (data.count ?? 0) > PAGE_SIZE && (
+              <div className="flex justify-center pt-2">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage((p) => Math.max(1, p - 1));
+                        }}
+                      />
+                    </PaginationItem>
+                    <div className="px-3 text-sm text-muted-foreground">Página {page} de {totalPages}</div>
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage((p) => Math.min(totalPages, p + 1));
+                        }}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Modal de criação/edição */}
         <Dialog
           open={isDialogOpen}
           onOpenChange={(o) => {
@@ -598,150 +623,219 @@ const Editais = () => {
             if (!o) resetForm();
           }}
         >
-          <DialogContent className="glass rounded-3xl max-w-3xl max-h-[85vh] overflow-y-auto">
-            <DialogHeader className="sticky top-0 bg-background/80 backdrop-blur z-10 pb-4">
-              <DialogTitle>{editing ? "Editar Edital" : "Novo Edital"}</DialogTitle>
+          <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-heading">
+                {editing ? "Editar Edital" : "Novo Edital"}
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                {editing ? "Atualize as informações do edital" : "Preencha os dados para criar um novo edital"}
+              </DialogDescription>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nome</label>
-                <Input {...form.register("nome")} className="glass-dark" placeholder="Nome do edital" />
-                {form.formState.errors.nome && (
-                  <p className="text-destructive text-xs mt-1">{form.formState.errors.nome.message}</p>
-                )}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Data de publicação</label>
-                  <Input type="date" {...form.register("data_publicacao")} className="glass-dark" />
-                  {form.formState.errors.data_publicacao && (
-                    <p className="text-destructive text-xs mt-1">{form.formState.errors.data_publicacao.message}</p>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome do Edital</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite o nome do edital" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
-                  <Select
-                    value={form.watch("status")}
-                    onValueChange={(v) => form.setValue("status", v as EditalFormValues["status"], { shouldValidate: true })}
-                  >
-                    <SelectTrigger className="glass-dark">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((s) => {
-                        const desabilitado = s === "Em andamento" && !podeUsarEmAndamento(form.watch("data_finalizacao"));
-                        return (
-                          <SelectItem
-                            key={s}
-                            value={s}
-                            disabled={desabilitado}
-                            className={desabilitado ? "opacity-50 cursor-not-allowed" : ""}
-                          >
-                            {s}
-                            {desabilitado && " (apenas se hoje > limite de inscrição)"}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.status && (
-                    <p className="text-destructive text-xs mt-1">{form.formState.errors.status.message as any}</p>
-                  )}
-                  {!podeUsarEmAndamento(form.watch("data_finalizacao")) && form.watch("data_finalizacao") && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      "Em andamento" só está disponível quando hoje é maior que o limite de inscrição
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Data de finalização</label>
-                  <Input
-                    type="date"
-                    {...form.register("data_finalizacao")}
-                    className="glass-dark"
-                    onChange={(e) => {
-                      form.setValue("data_finalizacao", e.target.value);
-                      if (e.target.value && podeUsarEmAndamento(e.target.value)) {
-                        const statusAtual = form.watch("status");
-                        if (statusAtual !== "Em andamento" && statusAtual !== "Cancelado") {
-                          form.setValue("status", "Finalizado");
-                        }
-                      }
-                    }}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="data_publicacao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data de Publicação</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input type="date" className="pl-10" {...field} />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {statusOptions.map((s) => {
+                              const desabilitado = s === "Em andamento" && !podeUsarEmAndamento(form.watch("data_finalizacao"));
+                              return (
+                                <SelectItem
+                                  key={s}
+                                  value={s}
+                                  disabled={desabilitado}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {getStatusIcon(s)}
+                                    <span>{s}</span>
+                                    {desabilitado && <span className="text-muted-foreground"> (apenas se hoje {'>'} limite)</span>}
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="data_finalizacao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data de Finalização (opcional)</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              type="date" 
+                              className="pl-10"
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                if (e.target.value && podeUsarEmAndamento(e.target.value)) {
+                                  const statusAtual = form.watch("status");
+                                  if (statusAtual !== "Em andamento" && statusAtual !== "Cancelado") {
+                                    form.setValue("status", "Finalizado");
+                                  }
+                                }
+                              }}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-              </div>
+                <FormField
+                  control={form.control}
+                  name="descricao"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição do Edital</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Descreva detalhes do edital" rows={4} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Descrição</label>
-                <Textarea {...form.register("descricao")} className="glass-dark" rows={4} placeholder="Detalhes do edital" />
-              </div>
-
-              {/* Anexos */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium">Anexos</label>
-                  <Button type="button" variant="ghost" onClick={adicionarAnexo} className="text-xs h-8 px-2">
-                    <Plus className="w-3 h-3 mr-1" />
-                    Adicionar anexo
-                  </Button>
-                </div>
-                <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
-                  {anexos.map((anexo, index) => !anexo.remover && (
-                    <div key={index} className="border border-border rounded-lg p-3 bg-background/50">
-                      <div className="space-y-2">
-                        <div>
-                          <label className="block text-xs text-muted-foreground mb-1">Descrição</label>
-                          <Input
-                            value={anexo.descricao}
-                            onChange={(e) => atualizarAnexo(index, "descricao", e.target.value)}
-                            placeholder="Ex: Edital principal"
-                            className="glass-dark h-8 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-muted-foreground mb-1">Arquivo</label>
-                          {anexo.arquivo_url && !anexo.arquivo ? (
-                            <div className="flex items-center gap-2 text-sm">
-                              <FileText className="w-3 h-3 text-primary" />
-                              <a href={anexo.arquivo_url} target="_blank" rel="noreferrer" className="text-primary hover:underline text-sm">
-                                Arquivo existente
-                              </a>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="mb-0">Anexos do Edital</FormLabel>
+                    <Button type="button" variant="ghost" size="sm" onClick={adicionarAnexo} className="gap-1">
+                      <Plus className="w-4 h-4" />
+                      Adicionar anexo
+                    </Button>
+                  </div>
+                  <div className="space-y-3 max-h-[35vh] overflow-y-auto pr-1 border rounded-lg">
+                    {anexos.filter(a => !a.remover).map((anexo, index) => (
+                      <div key={index} className="border border-border rounded-lg p-4 bg-card/50">
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-1 space-y-3">
+                              <div className="space-y-1.5">
+                                <FormLabel className="text-xs">Descrição do arquivo</FormLabel>
+                                <Input
+                                  value={anexo.descricao}
+                                  onChange={(e) => atualizarAnexo(index, "descricao", e.target.value)}
+                                  placeholder="Ex: Edital principal"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <FormLabel className="text-xs">Arquivo</FormLabel>
+                                {anexo.arquivo_url && !anexo.arquivo ? (
+                                  <div className="flex items-center gap-3 bg-secondary rounded-lg px-3 py-2 border">
+                                    <File className="h-4 w-4 text-primary" />
+                                    <a
+                                      href={anexo.arquivo_url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-sm text-primary hover:underline flex-1 truncate"
+                                    >
+                                      Arquivo existente
+                                    </a>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2"
+                                      onClick={() => {
+                                        const novos = [...anexos];
+                                        novos[index] = { ...novos[index], arquivo: null };
+                                        delete novos[index].arquivo_url;
+                                        setAnexos(novos);
+                                      }}
+                                    >
+                                      <Upload className="w-3.5 h-3.5" />
+                                      Substituir
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      type="file"
+                                      onChange={(e) => atualizarAnexo(index, "arquivo", e.target.files?.[0] ?? null)}
+                                      className="h-9 text-xs"
+                                    />
+                                  </div>
+                                )}
+                                {anexo.arquivo && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 rounded px-3 py-1.5">
+                                    <File className="w-3.5 h-3.5" />
+                                    <span className="truncate">{anexo.arquivo.name}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="pt-7">
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="destructive"
                                 size="sm"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => atualizarAnexo(index, "arquivo", null)}
+                                className="h-9 w-9 p-0"
+                                onClick={() => removerAnexo(index)}
                               >
-                                Substituir
+                                <Trash className="w-4 h-4" />
                               </Button>
                             </div>
-                          ) : (
-                            <Input
-                              type="file"
-                              onChange={(e) => atualizarAnexo(index, "arquivo", e.target.files?.[0] ?? null)}
-                              className="glass-dark h-8 text-xs"
-                            />
-                          )}
-                          {anexo.arquivo && (
-                            <p className="text-xs text-muted-foreground mt-1">Arquivo: {anexo.arquivo.name}</p>
-                          )}
-                        </div>
-                        <div className="flex justify-end pt-1">
-                          <Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-xs" onClick={() => removerAnexo(index)}>
-                            <Trash2 className="w-3 h-3 mr-1" />
-                            Remover
-                          </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-
-            </form>
-            <DialogFooter className="sticky bottom-0 bg-background/80 backdrop-blur pt-4 z-10">
+              </form>
+            </Form>
+            <DialogFooter className="gap-3 sm:gap-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -751,31 +845,36 @@ const Editais = () => {
               >
                 Cancelar
               </Button>
-              <Button type="submit" variant="default" disabled={createMutation.isPending || updateMutation.isPending} onClick={form.handleSubmit(onSubmit)}>
+              <Button
+                type="submit"
+                disabled={createMutation.isPending || updateMutation.isPending}
+                onClick={form.handleSubmit(onSubmit)}
+              >
                 {editing ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Pencil className="w-4 h-4" />
-                    Salvar alterações
-                  </span>
+                  <>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Salvar Alterações
+                  </>
                 ) : (
-                  <span className="inline-flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Criar edital
-                  </span>
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Criar Edital
+                  </>
                 )}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Modal de confirmação de deleção */}
         <Dialog open={deleteDialog.open} onOpenChange={(o) => setDeleteDialog({ open: o, id: null })}>
-          <DialogContent className="glass rounded-2xl">
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Confirmar deleção</DialogTitle>
+              <DialogTitle className="text-xl">Confirmar exclusão</DialogTitle>
+              <DialogDescription>
+                Tem certeza que deseja excluir este edital? Esta ação não pode ser desfeita.
+              </DialogDescription>
             </DialogHeader>
-            <div className="py-4">Tem certeza que deseja deletar este edital? Essa ação não pode ser desfeita.</div>
-            <DialogFooter className="flex gap-2">
+            <DialogFooter className="gap-3 sm:gap-2">
               <Button variant="ghost" onClick={() => setDeleteDialog({ open: false, id: null })}>
                 Cancelar
               </Button>
@@ -786,7 +885,7 @@ const Editais = () => {
                   setDeleteDialog({ open: false, id: null });
                 }}
               >
-                Deletar
+                Deletar Edital
               </Button>
             </DialogFooter>
           </DialogContent>

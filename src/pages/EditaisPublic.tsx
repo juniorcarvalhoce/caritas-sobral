@@ -279,9 +279,10 @@ const EditaisPublic = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="h-full"
                   >
                     <Card 
-                      className="rounded-2xl border-primary/20 overflow-hidden group hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                      className="rounded-2xl border-primary/20 overflow-hidden group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col"
                     >
                       <CardHeader className="pb-4 border-b border-border/50">
                         <div className="flex items-center justify-between">
@@ -297,14 +298,16 @@ const EditaisPublic = () => {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="pt-6">
+                      <CardContent className="pt-6 flex-1 flex flex-col">
                         <CardTitle className="text-xl font-semibold mb-2">
                           {edital.nome}
                         </CardTitle>
-                        {edital.descricao && (
-                          <p className="text-muted-foreground mt-2 text-sm">
+                        {edital.descricao ? (
+                          <p className="text-muted-foreground mt-2 text-sm flex-1">
                             {edital.descricao}
                           </p>
+                        ) : (
+                          <div className="flex-1" />
                         )}
                         {edital.data_finalizacao && (
                           <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
@@ -312,7 +315,7 @@ const EditaisPublic = () => {
                             <span>Limite para inscrição: {formatDate(edital.data_finalizacao)}</span>
                           </div>
                         )}
-                        <div className="mt-6">
+                        <div className="mt-auto pt-6">
                           <Button 
                             className="w-full group" 
                             onClick={() => navigate(`/edital/${edital.id}`)}
