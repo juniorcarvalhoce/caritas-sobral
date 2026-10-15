@@ -1,9 +1,11 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Users } from "lucide-react";
-import heroImage from "@/assets/hero-bg.jpg";
+import mandala from "@/assets/mandala-caritas.svg";
 
 const Hero = () => {
+  const reduceMotion = useReducedMotion();
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -14,17 +16,19 @@ const Hero = () => {
   return (
     <section
       id="inicio"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-      style={{
-        backgroundImage: `url(${heroImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
-      }}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background"
     >
-      {/* Mobile-friendly background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/70 to-background/85 md:from-background/80 md:via-background/60 md:to-background/80" />
+      {/* Mandala da Cáritas como marca d'água (gira bem devagar) */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
+        <motion.img
+          src={mandala}
+          alt=""
+          className="w-[140vw] max-w-none sm:w-[110vw] md:w-[85vw] lg:w-[70vw] xl:w-[60vw] opacity-[0.09] select-none"
+          animate={reduceMotion ? undefined : { rotate: 360 }}
+          transition={{ duration: 240, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--background)/0.55)_0%,_transparent_70%)]" />
       
       {/* Animated background elements - hidden on mobile for performance */}
       <div className="absolute inset-0 hidden md:block">
