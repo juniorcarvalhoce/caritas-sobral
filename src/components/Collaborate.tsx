@@ -1,9 +1,15 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
-import { Heart, Users, Building2, Copy } from "lucide-react";
+import { Heart, Users, Building2, Copy, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import pixQrCode from "@/assets/pix-qrcode.svg";
+
+// PIX estático (padrão BR Code do Banco Central) com a chave caritassobral@hotmail.com, sem valor fixo.
+// Se a chave mudar, gere de novo este código e o QR Code em src/assets/pix-qrcode.svg.
+const PIX_COPIA_E_COLA =
+  "00020126470014br.gov.bcb.pix0125caritassobral@hotmail.com5204000053039865802BR5924CARITAS DIOCESANA SOBRAL6006SOBRAL62070503***6304F738";
 
 const Collaborate = () => {
   const ref = useRef(null);
@@ -38,7 +44,8 @@ const Collaborate = () => {
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500"
+            id="voluntario"
+            className="scroll-mt-24 glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500"
           >
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <Users className="w-8 h-8 text-white" />
@@ -83,7 +90,8 @@ const Collaborate = () => {
             initial={{ opacity: 0, x: 30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500"
+            id="doacao"
+            className="scroll-mt-24 glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500"
           >
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <Heart className="w-8 h-8 text-white" />
@@ -156,6 +164,32 @@ const Collaborate = () => {
               </div>
 
               <div className="pt-4 border-t border-border">
+                <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                  <img
+                    src={pixQrCode}
+                    alt="QR Code PIX da Cáritas Diocesana de Sobral"
+                    width={144}
+                    height={144}
+                    loading="lazy"
+                    className="w-36 h-36 rounded-xl bg-white p-2 shadow-md flex-shrink-0"
+                  />
+                  <div className="text-center sm:text-left">
+                    <p className="font-semibold mb-1 flex items-center justify-center sm:justify-start gap-2">
+                      <QrCode className="w-4 h-4 text-primary" />
+                      Doe com PIX
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Aponte a câmera do app do seu banco para o QR Code e escolha o valor.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => copyToClipboard(PIX_COPIA_E_COLA, "Código PIX copia e cola")}
+                    >
+                      <Copy className="w-4 h-4" />
+                      Pix copia e cola
+                    </Button>
+                  </div>
+                </div>
                 <p className="text-xs text-muted-foreground mb-1">PIX (E-mail)</p>
                 <div className="flex items-center justify-between">
                   <p className="font-semibold text-sm">caritassobral@hotmail.com</p>

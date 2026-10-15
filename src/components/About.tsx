@@ -70,7 +70,7 @@ const About = () => {
                 a participação em políticas públicas.
               </p>
               <p>
-                Nossa missão é <strong className="text-foreground">testemunhar a solidariedade cristã</strong>{" "}
+                Atuamos na prática da <strong className="text-foreground">Justiça Social e da Solidariedade Libertadora</strong>{" "}
                 através de ações concretas que promovam a dignidade humana, a sustentabilidade e a
                 transformação social.
               </p>
@@ -126,7 +126,9 @@ const About = () => {
         >
           <h3 className="font-heading text-2xl font-semibold mb-4">Nossa Missão</h3>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Testemunhar e anunciar o Evangelho de Jesus Cristo, defendendo e promovendo toda forma de vida e participando da construção solidária da sociedade do Bem Viver, sinal do Reino de Deus, junto com as pessoas em situação de vulnerabilidade e exclusão social é a missão da Cáritas Diocesana de Sobral.
+            Nossa missão é animar, organizar e participar efetivamente da prática da Justiça Social e
+            Solidariedade Libertadora com os excluídos da nossa sociedade, contribuindo na construção de
+            alternativas para que todas as pessoas tenham igual direito a uma vida digna.
           </p>
         </motion.div>
       </div>

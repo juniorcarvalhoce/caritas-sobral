@@ -2,9 +2,18 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Users } from "lucide-react";
 import mandala from "@/assets/mandala-caritas.svg";
+import AnimatedCounter from "@/components/AnimatedCounter";
+
+// Fundada em 1º de outubro de 1983: os anos se atualizam sozinhos
+const calcularAnosDeHistoria = () => {
+  const hoje = new Date();
+  const jaFezAniversario = hoje.getMonth() > 9 || (hoje.getMonth() === 9 && hoje.getDate() >= 1);
+  return hoje.getFullYear() - 1983 - (jaFezAniversario ? 0 : 1);
+};
 
 const Hero = () => {
   const reduceMotion = useReducedMotion();
+  const anosDeHistoria = calcularAnosDeHistoria();
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -106,7 +115,7 @@ const Hero = () => {
           >
             <Button
               variant="hero"
-              onClick={() => scrollToSection("colabore")}
+              onClick={() => scrollToSection("voluntario")}
               className="group w-full sm:w-auto"
               size="lg"
             >
@@ -117,7 +126,7 @@ const Hero = () => {
             <Button
               variant="glass"
               size="lg"
-              onClick={() => scrollToSection("colabore")}
+              onClick={() => scrollToSection("doacao")}
               className="w-full sm:w-auto"
             >
               <Heart className="w-5 h-5" />
@@ -133,9 +142,9 @@ const Hero = () => {
             className="mt-8 md:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 px-4"
           >
             {[
-              { number: "40+", label: "Anos de História" },
-              { number: "8", label: "Municípios Atendidos" },
-              { number: "1000+", label: "Vidas Impactadas" },
+              { value: anosDeHistoria, suffix: "", label: "Anos de História" },
+              { value: 8, suffix: "", label: "Municípios Atendidos" },
+              { value: 1000, suffix: "+", label: "Vidas Impactadas" },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -144,7 +153,12 @@ const Hero = () => {
                 transition={{ delay: 1.2 + index * 0.1 }}
                 className="glass rounded-xl md:rounded-2xl p-4 md:p-6"
               >
-                <div className="text-2xl md:text-4xl font-bold text-gradient mb-1 md:mb-2">{stat.number}</div>
+                <AnimatedCounter
+                  value={stat.value}
+                  suffix={stat.suffix}
+                  delay={1.2 + index * 0.1}
+                  className="block text-2xl md:text-4xl font-bold text-gradient mb-1 md:mb-2"
+                />
                 <div className="text-xs md:text-sm text-muted-foreground">{stat.label}</div>
               </motion.div>
             ))}

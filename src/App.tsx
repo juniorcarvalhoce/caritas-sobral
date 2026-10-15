@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "./lib/supabase";
 
 import AdminLayout from "./pages/AdminLayout";
+import WhatsAppButton from "./components/WhatsAppButton";
 import Patrimonio from "./pages/Patrimonio";
 
 import PatrimonioDetalhe from "./pages/PatrimonioDetalhe";
@@ -48,6 +49,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <WhatsAppButton />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
