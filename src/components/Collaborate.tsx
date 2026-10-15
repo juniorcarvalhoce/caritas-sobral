@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import pixQrCode from "@/assets/pix-qrcode.svg";
 
-// PIX estático (padrão BR Code do Banco Central) com a chave caritassobral@hotmail.com, sem valor fixo.
+// PIX estático (padrão BR Code do Banco Central) com a chave CNPJ 10.379.758/0001-36, sem valor fixo.
 // Se a chave mudar, gere de novo este código e o QR Code em src/assets/pix-qrcode.svg.
+const PIX_CHAVE_CNPJ = "10379758000136";
 const PIX_COPIA_E_COLA =
-  "00020126470014br.gov.bcb.pix0125caritassobral@hotmail.com5204000053039865802BR5924CARITAS DIOCESANA SOBRAL6006SOBRAL62070503***6304F738";
+  "00020126360014br.gov.bcb.pix0114103797580001365204000053039865802BR5924CARITAS DIOCESANA SOBRAL6006SOBRAL62070503***63049576";
 
 const Collaborate = () => {
   const ref = useRef(null);
@@ -190,15 +191,13 @@ const Collaborate = () => {
                     </Button>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mb-1">PIX (E-mail)</p>
+                <p className="text-xs text-muted-foreground mb-1">Chave PIX (CNPJ)</p>
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-sm">caritassobral@hotmail.com</p>
+                  <p className="font-semibold">10.379.758/0001-36</p>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      copyToClipboard("caritassobral@hotmail.com", "Chave PIX")
-                    }
+                    onClick={() => copyToClipboard(PIX_CHAVE_CNPJ, "Chave PIX")}
                   >
                     <Copy className="w-4 h-4" />
                   </Button>
