@@ -33,7 +33,7 @@ const Hero = () => {
         <motion.img
           src={mandala}
           alt=""
-          className="w-[140vw] max-w-none sm:w-[110vw] md:w-[85vw] lg:w-[70vw] xl:w-[60vw] opacity-[0.09] select-none"
+          className="w-[140vw] max-w-none sm:w-[110vw] md:w-[85vw] lg:w-[70vw] xl:w-[60vw] opacity-[0.14] select-none"
           animate={reduceMotion ? undefined : { rotate: 360 }}
           transition={{ duration: 240, repeat: Infinity, ease: "linear" }}
         />
