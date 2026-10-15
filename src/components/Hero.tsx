@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Users } from "lucide-react";
-import mandala from "@/assets/mandala-caritas.svg";
+import mandala from "@/assets/mandala-sementes.svg";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import logoCaritas from "@/assets/logo-caritas.png";
 
@@ -28,12 +28,12 @@ const Hero = () => {
       id="inicio"
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background"
     >
-      {/* Mandala da Cáritas como marca d'água (gira bem devagar) */}
+      {/* Mandala de sementes como marca d'água (gira bem devagar) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
         <motion.img
           src={mandala}
           alt=""
-          className="w-[140vw] max-w-none sm:w-[110vw] md:w-[85vw] lg:w-[70vw] xl:w-[60vw] opacity-[0.14] select-none"
+          className="w-[140vw] max-w-none sm:w-[110vw] md:w-[85vw] lg:w-[70vw] xl:w-[60vw] opacity-[0.2] select-none"
           animate={reduceMotion ? undefined : { rotate: 360 }}
           transition={{ duration: 240, repeat: Infinity, ease: "linear" }}
         />
@@ -64,7 +64,7 @@ const Hero = () => {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 pt-28 pb-12 md:py-0 relative z-10">
+      <div className="container mx-auto px-4 pt-28 pb-12 md:pt-32 md:pb-16 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
