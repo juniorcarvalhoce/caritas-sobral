@@ -4,6 +4,7 @@ import { ArrowRight, Heart, Users } from "lucide-react";
 import mandala from "@/assets/mandala-sementes.svg";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import logoCaritas from "@/assets/logo-caritas.png";
+import { municipiosAtendidos, VIDAS_IMPACTADAS } from "@/data/projetos";
 
 // Fundada em 1º de outubro de 1983: os anos se atualizam sozinhos
 const calcularAnosDeHistoria = () => {
@@ -161,8 +162,8 @@ const Hero = () => {
           >
             {[
               { value: anosDeHistoria, suffix: "", label: "Anos de História" },
-              { value: 8, suffix: "", label: "Municípios Atendidos" },
-              { value: 1000, suffix: "+", label: "Vidas Impactadas" },
+              { value: municipiosAtendidos.length, suffix: "", label: "Municípios Atendidos" },
+              { value: VIDAS_IMPACTADAS, suffix: "+", label: "Vidas Impactadas" },
             ].map((stat, index) => (
               <motion.div
                 key={index}
