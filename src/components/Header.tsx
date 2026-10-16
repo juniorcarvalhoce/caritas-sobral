@@ -59,17 +59,31 @@ const Header = () => {
     >
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <motion.div
+          <motion.a
+            href="/"
+            onClick={(e) => {
+              // Ctrl/Cmd+clique continua abrindo em nova aba
+              if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+              e.preventDefault();
+              scrollToSection("#inicio");
+            }}
+            aria-label="Cáritas Diocesana de Sobral, voltar ao início"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
+            className="flex items-center gap-3 rounded-lg group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
           >
-            <img src={logoCaritas} alt="Cáritas Diocesana de Sobral" className="w-12 h-12" />
+            <img
+              src={logoCaritas}
+              alt=""
+              className="w-12 h-12 transition-transform duration-300 group-hover:scale-105"
+            />
             <div className="flex flex-col">
-              <span className="font-heading font-semibold text-lg leading-tight">Cáritas</span>
+              <span className="font-heading font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+                Cáritas
+              </span>
               <span className="text-xs text-muted-foreground">Diocesana de Sobral</span>
             </div>
-          </motion.div>
+          </motion.a>
 
           <div className="hidden md:flex items-center gap-8">
             {menuItems.map((item, index) => (
