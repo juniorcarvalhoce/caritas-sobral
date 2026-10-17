@@ -18,10 +18,9 @@ SET public = true,
     file_size_limit = EXCLUDED.file_size_limit,
     allowed_mime_types = EXCLUDED.allowed_mime_types;
 
+-- O bucket é público: as fotos abrem pelo link sem precisar de política de leitura.
+-- Uma política SELECT ampla permitiria listar todos os arquivos, então ela é removida.
 DROP POLICY IF EXISTS "Patrimonio: leitura pública das fotos" ON storage.objects;
-CREATE POLICY "Patrimonio: leitura pública das fotos"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'patrimonio');
 
 DROP POLICY IF EXISTS "Patrimonio: upload por usuários autenticados" ON storage.objects;
 CREATE POLICY "Patrimonio: upload por usuários autenticados"
