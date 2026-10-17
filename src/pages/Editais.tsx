@@ -19,6 +19,7 @@ import { Plus, Pencil, Trash2, FileText, Eye, Shield, CheckCircle, Clock, AlertC
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { tipoDoArquivo } from "@/lib/arquivos";
+import { ordenarEditais } from "@/lib/editais";
 
 type Edital = {
   id: string;
@@ -120,24 +121,22 @@ const Editais = () => {
     queryKey,
     enabled: isAuthChecked,
     queryFn: async () => {
-      let q = supabase
-        .from("editais")
-        .select("*", { count: "exact" })
-        .order("created_at", { ascending: false })
-        .range((page - 1) * PAGE_SIZE, (page - 1) * PAGE_SIZE + (PAGE_SIZE - 1));
-
+      // Busca todos para ordenar e filtrar pelo status calculado (que depende da data de finalização)
+      let q = supabase.from("editais").select("*");
       if (search) q = q.ilike("nome", `%${search}%`);
-      if (statusFilter) q = q.eq("status", statusFilter);
 
-      const { data, error, count } = await q;
+      const { data, error } = await q;
       if (error) throw error;
 
-      const itemsComStatus = (data ?? []).map((item: Edital) => ({
+      let itens = (data ?? []).map((item: Edital) => ({
         ...item,
         status: getStatusDinamico(item),
       }));
+      if (statusFilter) itens = itens.filter((item) => item.status === statusFilter);
+      itens = ordenarEditais(itens);
 
-      return { items: itemsComStatus as Edital[], count: count ?? 0 };
+      const inicio = (page - 1) * PAGE_SIZE;
+      return { items: itens.slice(inicio, inicio + PAGE_SIZE) as Edital[], count: itens.length };
     },
   });
 

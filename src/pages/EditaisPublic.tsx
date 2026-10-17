@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { FileText, Search, Eye, Calendar, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { ordenarEditais } from "@/lib/editais";
 
 type Edital = {
   id: string;
@@ -133,6 +134,9 @@ const EditaisPublic = () => {
         itemsComStatus = itemsComStatus.filter((item) => item.status === statusFilter);
       }
       
+      // Abertos, depois Em andamento, depois Finalizados; dentro de cada grupo, os mais recentes primeiro
+      itemsComStatus = ordenarEditais(itemsComStatus);
+
       // Aplica paginação após filtrar
       const totalFiltrado = itemsComStatus.length;
       const itemsPaginados = itemsComStatus.slice(
@@ -226,7 +230,7 @@ const EditaisPublic = () => {
                 <div className="text-sm text-muted-foreground">
                   {data.count > 0 ? (
                     <span>
-                      <span className="font-semibold text-foreground">{data.count}</span> edital{data.count !== 1 ? "ais" : ""} encontrado{data.count !== 1 ? "s" : ""}
+                      <span className="font-semibold text-foreground">{data.count}</span> {data.count !== 1 ? "editais" : "edital"} encontrado{data.count !== 1 ? "s" : ""}
                     </span>
                   ) : (
                     <span>Nenhum edital encontrado</span>
