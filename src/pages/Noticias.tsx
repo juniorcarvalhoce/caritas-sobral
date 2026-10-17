@@ -16,8 +16,8 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ExternalLink, Shield, LogOut, FileText, Eye, EyeOff } from "lucide-react";
-import logoCaritas from "@/assets/logo-caritas.png";
+import { Plus, Pencil, Trash2, ExternalLink, Shield, FileText, Eye, EyeOff } from "lucide-react";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -337,40 +337,20 @@ const Noticias = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Cabeçalho com logo, navegação e logout */}
-      <header className="w-full bg-card/80 shadow-lg mb-8">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <img src={logoCaritas} alt="Logo Cáritas" className="h-10 w-auto rounded-lg shadow" />
-              <span className="font-heading text-xl font-bold text-primary">Área Administrativa</span>
-            </div>
-            <Button
-              variant="ghost"
-              className="gap-2"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate("/login", { replace: true });
-              }}
-            >
-              <LogOut className="w-5 h-5" />
-              Sair
-            </Button>
-          </div>
-
-        </div>
-      </header>
-      <div className="container mx-auto px-4 py-10">
-        <Card className="glass rounded-3xl shadow-2xl">
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
-            <CardTitle className="font-heading text-2xl">Notícias</CardTitle>
-            <Button onClick={openCreate} variant="default" className="gap-2">
-              <Plus className="w-4 h-4" />
-              Nova Notícia
-            </Button>
-          </CardHeader>
-          <CardContent>
+    <>
+      <AdminPageHeader
+        titulo="Notícias"
+        descricao="Notícias e ações exibidas no carrossel da página inicial."
+        acoes={
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Nova notícia
+          </Button>
+        }
+      />
+      <div>
+        <Card className="rounded-xl shadow-none">
+          <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between mb-6">
               <div className="flex gap-3 w-full md:w-auto">
                 <Input
@@ -713,7 +693,7 @@ const Noticias = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </>
   );
 };
 

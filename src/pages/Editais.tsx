@@ -15,8 +15,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, FileText, Eye, Shield, LogOut, Upload, X, File, CheckCircle, Clock, AlertCircle, Calendar, MoreVertical, ArrowRight, Trash } from "lucide-react";
-import logoCaritas from "@/assets/logo-caritas.png";
+import { Plus, Pencil, Trash2, FileText, Eye, Shield, CheckCircle, Clock, AlertCircle, Calendar, Trash, Search } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { tipoDoArquivo } from "@/lib/arquivos";
 
 type Edital = {
   id: string;
@@ -103,6 +105,14 @@ const Editais = () => {
       sub.subscription.unsubscribe();
     };
   }, [navigate]);
+
+  // Atalho "Novo edital" vindo do Resumo (/admin/editais?novo=1)
+  useEffect(() => {
+    if (isAuthChecked && new URLSearchParams(location.search).get("novo") === "1") {
+      setIsDialogOpen(true);
+      navigate("/admin/editais", { replace: true });
+    }
+  }, [isAuthChecked, location.search, navigate]);
 
   const queryKey = useMemo(() => ["editais", { search, statusFilter, page }], [search, statusFilter, page]);
 
@@ -457,33 +467,22 @@ const Editais = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="w-full bg-card/80 shadow-lg mb-8">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <img src={logoCaritas} alt="Logo Cáritas" className="h-10 w-auto rounded-lg shadow" />
-              <span className="font-heading text-xl font-bold text-primary">Área Administrativa</span>
-            </div>
-            <Button
-              variant="ghost"
-              className="gap-2"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate("/login", { replace: true });
-              }}
-            >
-              <LogOut className="w-5 h-5" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-      <div className="container mx-auto px-4 py-10">
-        <Card className="glass rounded-3xl shadow-2xl">
-          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6">
-            <CardTitle className="font-heading text-2xl">Editais</CardTitle>
-            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+    <>
+      <AdminPageHeader
+        titulo="Editais"
+        descricao="Editais publicados na página pública do site, com seus anexos."
+        acoes={
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Novo edital
+          </Button>
+        }
+      />
+      <div>
+        <Card className="rounded-xl shadow-none">
+          <CardHeader className="flex flex-col md:flex-row gap-3 p-4 border-b space-y-0">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nome..."
                 value={search}
@@ -491,41 +490,34 @@ const Editais = () => {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="glass-dark"
+                className="pl-9"
               />
-              <Select
-                value={statusFilter ?? "all"}
-                onValueChange={(v) => {
-                  setStatusFilter(v === "all" ? undefined : v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="glass-dark w-full md:w-[200px]">
-                  <SelectValue placeholder="Filtrar status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {statusOptions.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(s)}
-                        <span>{s}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={openCreate} variant="default" className="gap-2 flex-shrink-0">
-                <Plus className="w-4 h-4" />
-                Novo Edital
-              </Button>
             </div>
+            <Select
+              value={statusFilter ?? "all"}
+              onValueChange={(v) => {
+                setStatusFilter(v === "all" ? undefined : v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Filtrar status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                {statusOptions.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(s)}
+                      <span>{s}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-sm text-muted-foreground">
-              {data?.count ?? 0} resultado(s)
-            </div>
-            <div className="overflow-hidden rounded-xl border">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -572,23 +564,39 @@ const Editais = () => {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">{formatDate(item.data_finalizacao)}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => navigate(`/edital/${item.id}`)}>
-                            <Eye className="w-4 h-4" />
-                            <span className="hidden md:inline ml-1">Ver</span>
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>
-                            <Pencil className="w-4 h-4" />
-                            <span className="hidden md:inline ml-1">Editar</span>
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => setDeleteDialog({ open: true, id: item.id })}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            <span className="hidden md:inline ml-1">Deletar</span>
-                          </Button>
+                        <div className="flex justify-end gap-1">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/edital/${item.id}`)}>
+                                <Eye className="w-4 h-4" />
+                                <span className="sr-only">Ver no site</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Ver no site</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(item)}>
+                                <Pencil className="w-4 h-4" />
+                                <span className="sr-only">Editar</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Editar</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => setDeleteDialog({ open: true, id: item.id })}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                <span className="sr-only">Excluir</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Excluir</TooltipContent>
+                          </Tooltip>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -596,8 +604,11 @@ const Editais = () => {
                 </TableBody>
               </Table>
             </div>
+            <div className="text-xs text-muted-foreground px-4 py-3 border-t">
+              {data?.count ?? 0} edital(is) encontrado(s)
+            </div>
             {data && (data.count ?? 0) > PAGE_SIZE && (
-              <div className="flex justify-center pt-2">
+              <div className="flex justify-center pb-4">
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
@@ -702,7 +713,7 @@ const Editais = () => {
                                   <div className="flex items-center gap-2">
                                     {getStatusIcon(s)}
                                     <span>{s}</span>
-                                    {desabilitado && <span className="text-muted-foreground"> (apenas se hoje {'>'} limite)</span>}
+                                    {desabilitado && <span className="text-xs text-muted-foreground">(após o prazo)</span>}
                                   </div>
                                 </SelectItem>
                               );
@@ -757,90 +768,79 @@ const Editais = () => {
                   )}
                 />
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <FormLabel className="mb-0">Anexos do Edital</FormLabel>
-                    <Button type="button" variant="ghost" size="sm" onClick={adicionarAnexo} className="gap-1">
-                      <Plus className="w-4 h-4" />
-                      Adicionar anexo
-                    </Button>
+                    <FormLabel className="mb-0">
+                      Anexos do edital
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        {anexos.filter((a) => !a.remover).length} arquivo(s)
+                      </span>
+                    </FormLabel>
                   </div>
-                  <div className="space-y-3 max-h-[35vh] overflow-y-auto pr-1 border rounded-lg">
-                    {anexos.filter(a => !a.remover).map((anexo, index) => (
-                      <div key={index} className="border border-border rounded-lg p-4 bg-card/50">
-                        <div className="space-y-3">
-                          <div className="flex items-start gap-3">
-                            <div className="flex-1 space-y-3">
-                              <div className="space-y-1.5">
-                                <FormLabel className="text-xs">Descrição do arquivo</FormLabel>
-                                <Input
-                                  value={anexo.descricao}
-                                  onChange={(e) => atualizarAnexo(index, "descricao", e.target.value)}
-                                  placeholder="Ex: Edital principal"
-                                  className="h-9"
+                  <div className="rounded-lg border divide-y">
+                    {anexos.map((anexo, index) => {
+                      // O índice é o da lista completa: anexos removidos ficam marcados e só são ocultados
+                      if (anexo.remover) return null;
+                      const tipo = tipoDoArquivo(anexo.arquivo?.name ?? anexo.arquivo_url);
+                      const temArquivo = Boolean(anexo.arquivo || anexo.arquivo_url);
+                      return (
+                        <div key={anexo.id ?? `novo-${index}`} className="flex items-center gap-3 px-3 py-2.5">
+                          <span
+                            className={`w-11 flex-shrink-0 text-center rounded-md py-1 text-[10px] font-bold ring-1 ring-inset ${
+                              temArquivo ? tipo.classe : "bg-muted text-muted-foreground ring-border"
+                            }`}
+                          >
+                            {temArquivo ? tipo.rotulo : "—"}
+                          </span>
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <Input
+                              value={anexo.descricao}
+                              onChange={(e) => atualizarAnexo(index, "descricao", e.target.value)}
+                              placeholder="Nome do documento (ex.: Edital completo)"
+                              className="h-8 text-sm"
+                              aria-label="Nome do documento"
+                            />
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                              {anexo.arquivo ? (
+                                <span className="truncate">Novo arquivo: {anexo.arquivo.name}</span>
+                              ) : anexo.arquivo_url ? (
+                                <a href={anexo.arquivo_url} target="_blank" rel="noreferrer" className="truncate hover:text-primary hover:underline">
+                                  Arquivo atual (abrir)
+                                </a>
+                              ) : (
+                                <span className="text-amber-700">Nenhum arquivo escolhido</span>
+                              )}
+                              <label className="text-primary font-medium cursor-pointer hover:underline flex-shrink-0">
+                                {temArquivo ? "Trocar" : "Escolher arquivo"}
+                                <input
+                                  type="file"
+                                  className="sr-only"
+                                  onChange={(e) => atualizarAnexo(index, "arquivo", e.target.files?.[0] ?? null)}
                                 />
-                              </div>
-                              <div className="space-y-1.5">
-                                <FormLabel className="text-xs">Arquivo</FormLabel>
-                                {anexo.arquivo_url && !anexo.arquivo ? (
-                                  <div className="flex items-center gap-3 bg-secondary rounded-lg px-3 py-2 border">
-                                    <File className="h-4 w-4 text-primary" />
-                                    <a
-                                      href={anexo.arquivo_url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-sm text-primary hover:underline flex-1 truncate"
-                                    >
-                                      Arquivo existente
-                                    </a>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 px-2"
-                                      onClick={() => {
-                                        const novos = [...anexos];
-                                        novos[index] = { ...novos[index], arquivo: null };
-                                        delete novos[index].arquivo_url;
-                                        setAnexos(novos);
-                                      }}
-                                    >
-                                      <Upload className="w-3.5 h-3.5" />
-                                      Substituir
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      type="file"
-                                      onChange={(e) => atualizarAnexo(index, "arquivo", e.target.files?.[0] ?? null)}
-                                      className="h-9 text-xs"
-                                    />
-                                  </div>
-                                )}
-                                {anexo.arquivo && (
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 rounded px-3 py-1.5">
-                                    <File className="w-3.5 h-3.5" />
-                                    <span className="truncate">{anexo.arquivo.name}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="pt-7">
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                className="h-9 w-9 p-0"
-                                onClick={() => removerAnexo(index)}
-                              >
-                                <Trash className="w-4 h-4" />
-                              </Button>
+                              </label>
                             </div>
                           </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => removerAnexo(index)}
+                            aria-label="Remover anexo"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={adicionarAnexo}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-3 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Adicionar anexo
+                    </button>
                   </div>
                 </div>
               </form>
@@ -901,7 +901,7 @@ const Editais = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </>
   );
 };
 

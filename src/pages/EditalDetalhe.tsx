@@ -5,15 +5,16 @@ import { supabase } from "@/lib/supabase";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, ArrowLeft, Download, ExternalLink } from "lucide-react";
+import { FileText, ArrowLeft, Download, ExternalLink, CalendarDays, CalendarCheck, Paperclip } from "lucide-react";
 import { motion } from "framer-motion";
+import { tipoDoArquivo, abreNoNavegador } from "@/lib/arquivos";
 
 type Edital = {
   id: string;
   nome: string;
   descricao: string | null;
   data_publicacao: string;
+  data_finalizacao: string | null;
   status: "Aberto" | "Em andamento" | "Finalizado" | "Cancelado";
 };
 
@@ -31,35 +32,18 @@ const formatDate = (dateStr?: string | null) => {
   if (!year || !month || !day) return "—";
   const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   if (isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 };
 
-const getFileIcon = (url: string) => {
-  const extension = url.split('.').pop()?.toLowerCase();
-  switch (extension) {
-    case "pdf":
-      return "📄";
-    case "doc":
-    case "docx":
-      return "📝";
-    case "xls":
-    case "xlsx":
-      return "📊";
-    case "ppt":
-    case "pptx":
-      return "📽️";
-    case "jpg":
-    case "jpeg":
-    case "png":
-    case "gif":
-      return "🖼️";
-    case "zip":
-    case "rar":
-      return "📦";
-    default:
-      return "📎";
-  }
+const corDoStatus: Record<Edital["status"], string> = {
+  Aberto: "bg-green-50 text-green-700 ring-green-600/20",
+  "Em andamento": "bg-yellow-50 text-yellow-700 ring-yellow-600/20",
+  Finalizado: "bg-gray-50 text-gray-700 ring-gray-600/20",
+  Cancelado: "bg-red-50 text-red-700 ring-red-600/20",
 };
+
+// O Supabase força o download quando a URL pública recebe o parâmetro "download"
+const linkDeDownload = (url: string) => `${url}${url.includes("?") ? "&" : "?"}download=`;
 
 const EditalDetalhe = () => {
   const { id } = useParams();
@@ -126,112 +110,106 @@ const EditalDetalhe = () => {
     );
   }
 
+  const informacoes = [
+    { rotulo: "Publicação", valor: formatDate(edital.data_publicacao), icone: CalendarDays },
+    { rotulo: "Finalização", valor: formatDate(edital.data_finalizacao), icone: CalendarCheck },
+    { rotulo: "Anexos", valor: `${anexos?.length ?? 0} documento(s)`, icone: Paperclip },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
       <Header />
-      <main className="container mx-auto px-4 pt-32 pb-16">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+      <main className="container mx-auto px-4 pt-28 md:pt-32 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
+          className="max-w-5xl mx-auto"
         >
-          <Button 
-            variant="ghost" 
-            className="mb-8 group" 
-            onClick={() => navigate("/editais")}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
+          <Button variant="ghost" size="sm" className="mb-6 -ml-2 group text-muted-foreground" onClick={() => navigate("/editais")}>
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Voltar para editais
           </Button>
 
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-12 text-center">
-              <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {edital.nome}
-              </h1>
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                <span className="text-sm text-muted-foreground">
-                  Publicado em {formatDate(edital.data_publicacao)}
-                </span>
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${
-                  edital.status === "Aberto" 
-                    ? "bg-green-50 text-green-700 ring-green-600/20" 
-                    : edital.status === "Em andamento"
-                    ? "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
-                    : edital.status === "Finalizado"
-                    ? "bg-gray-50 text-gray-700 ring-gray-600/20"
-                    : "bg-red-50 text-red-700 ring-red-600/20"
-                }`}>
-                  {edital.status}
-                </span>
-              </div>
+          {/* Cabeçalho: título e descrição à esquerda, resumo à direita */}
+          <div className="grid lg:grid-cols-[1fr_300px] gap-6 mb-8">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Edital</p>
+              <h1 className="font-heading text-2xl md:text-4xl font-bold leading-tight mb-4">{edital.nome}</h1>
               {edital.descricao && (
-                <p className="text-muted-foreground mt-6 max-w-2xl mx-auto leading-relaxed">
-                  {edital.descricao}
-                </p>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{edital.descricao}</p>
               )}
             </div>
 
-            <Card className="glass rounded-3xl shadow-2xl overflow-hidden border-0">
-              <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
-                <CardTitle className="font-heading text-2xl flex items-center gap-2">
-                  <FileText className="w-6 h-6 text-primary" />
-                  Anexos do Edital
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 md:p-8">
-                {isErrorAnexos ? (
-                  <div className="text-center text-destructive py-8">
-                    <p>Erro ao carregar anexos. Tente novamente mais tarde.</p>
+            <aside className="bg-card rounded-xl border p-5 h-fit">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-muted-foreground">Situação</span>
+                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${corDoStatus[edital.status]}`}>
+                  {edital.status}
+                </span>
+              </div>
+              <dl className="space-y-3">
+                {informacoes.map((info) => (
+                  <div key={info.rotulo} className="flex items-start gap-3">
+                    <info.icone className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <div>
+                      <dt className="text-xs text-muted-foreground">{info.rotulo}</dt>
+                      <dd className="text-sm font-medium">{info.valor}</dd>
+                    </div>
                   </div>
-                ) : (anexos?.length ?? 0) === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p className="text-lg font-medium mb-2">Nenhum anexo disponível</p>
-                    <p>Este edital ainda não possui anexos.</p>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {anexos!.map((anexo, index) => (
-                      <motion.div
-                        key={anexo.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: index * 0.1 }}
-                        className="group relative overflow-hidden"
-                      >
-                        <a
-                          href={anexo.arquivo_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block"
-                        >
-                          <div className="flex items-center gap-4 p-4 md:p-6 bg-background/80 rounded-2xl border border-border/50 transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 group-hover:bg-primary/5">
-                            <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-3xl md:text-4xl group-hover:scale-110 transition-transform duration-300">
-                              {getFileIcon(anexo.arquivo_url)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-lg md:text-xl text-foreground group-hover:text-primary transition-colors">
-                                {anexo.descricao}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Clique para abrir o arquivo
-                              </p>
-                            </div>
-                            <div className="flex-shrink-0 ml-4">
-                              <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                                <Download className="w-5 h-5 md:w-6 md:h-6" />
-                              </div>
-                            </div>
-                          </div>
-                        </a>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                ))}
+              </dl>
+            </aside>
           </div>
+
+          {/* Documentos */}
+          <section className="bg-card rounded-xl border overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-4 border-b">
+              <FileText className="w-5 h-5 text-primary" />
+              <h2 className="font-heading font-semibold text-lg">Documentos do edital</h2>
+            </div>
+
+            {isErrorAnexos ? (
+              <p className="text-center text-destructive py-10 px-4">Erro ao carregar os documentos. Tente novamente mais tarde.</p>
+            ) : (anexos?.length ?? 0) === 0 ? (
+              <div className="text-center py-12 px-4 text-muted-foreground">
+                <FileText className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                <p className="font-medium">Nenhum documento disponível</p>
+                <p className="text-sm">Este edital ainda não possui anexos.</p>
+              </div>
+            ) : (
+              <ul className="divide-y">
+                {anexos!.map((anexo) => {
+                  const tipo = tipoDoArquivo(anexo.arquivo_url);
+                  const visualizavel = abreNoNavegador(anexo.arquivo_url);
+                  return (
+                    <li key={anexo.id} className="flex items-center gap-4 px-5 py-3 hover:bg-muted/40 transition-colors">
+                      <span className={`w-11 flex-shrink-0 text-center rounded-md py-1 text-[10px] font-bold ring-1 ring-inset ${tipo.classe}`}>
+                        {tipo.rotulo}
+                      </span>
+                      <p className="flex-1 min-w-0 text-sm font-medium leading-snug">{anexo.descricao || "Documento"}</p>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {visualizavel && (
+                          <Button variant="ghost" size="sm" className="h-8" asChild>
+                            <a href={anexo.arquivo_url} target="_blank" rel="noreferrer">
+                              <ExternalLink className="w-4 h-4" />
+                              <span className="hidden sm:inline">Visualizar</span>
+                            </a>
+                          </Button>
+                        )}
+                        <Button variant="outline" size="sm" className="h-8" asChild>
+                          <a href={linkDeDownload(anexo.arquivo_url)} rel="noreferrer">
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline">Baixar</span>
+                          </a>
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
         </motion.div>
       </main>
       <Footer />

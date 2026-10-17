@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "./lib/supabase";
 
 import AdminLayout from "./pages/AdminLayout";
+import AdminResumo from "./pages/AdminResumo";
 import WhatsAppButton from "./components/WhatsAppButton";
 import Patrimonio from "./pages/Patrimonio";
 
@@ -38,7 +39,7 @@ const App = () => (
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/editais" replace />} />
+            <Route index element={<AdminResumo />} />
             <Route path="editais" element={<Editais />} />
             <Route path="noticias" element={<Noticias />} />
             <Route path="patrimonio" element={<Patrimonio />} />
