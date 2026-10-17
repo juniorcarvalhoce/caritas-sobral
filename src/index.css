@@ -177,3 +177,9 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* Barra de progresso do carrossel de notícias: ao terminar, o carrossel avança */
+@keyframes noticia-progresso {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

@@ -11,6 +11,7 @@ import EditaisPublic from "./pages/EditaisPublic";
 import EditalDetalhe from "./pages/EditalDetalhe";
 import Noticias from "./pages/Noticias";
 import NoticiaDetalhe from "./pages/NoticiaDetalhe";
+import NoticiasPublic from "./pages/NoticiasPublic";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "./lib/supabase";
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/editais" element={<EditaisPublic />} />
           <Route path="/edital/:id" element={<EditalDetalhe />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/noticias" element={<NoticiasPublic />} />
           <Route path="/noticia/:id" element={<NoticiaDetalhe />} />
 
           {/* Admin Routes */}

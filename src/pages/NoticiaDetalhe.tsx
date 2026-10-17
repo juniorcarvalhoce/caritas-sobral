@@ -17,6 +17,7 @@ type Noticia = {
   conteudo: string | null;
   data_publicacao: string;
   autor?: string; // Optional for now
+  url?: string | null; // Link externo opcional, exibido no fim da notícia
 };
 
 const NoticiaDetalhe = () => {
@@ -85,7 +86,11 @@ const NoticiaDetalhe = () => {
       <div className="container mx-auto pt-24 pb-8 px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate('/', { state: { scrollTo: '#noticias-e-acoes' } })}
+          onClick={() => {
+            // Volta para a página anterior do site (ex.: Todas as notícias); se abriu pelo link direto, vai para a seção de notícias
+            if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
+            else navigate('/', { state: { scrollTo: '#noticias-e-acoes' } });
+          }}
           className="mb-6 hover:bg-secondary/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
