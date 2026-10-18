@@ -25,6 +25,7 @@ const rede = [
     local: "Fortaleza – CE",
     descricao: "Articula as Cáritas diocesanas do Ceará e fortalece o trabalho em rede no estado.",
     icone: MapIcon,
+    link: "https://ce.caritas.org.br/",
   },
   {
     nivel: "Nacional",
