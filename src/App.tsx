@@ -17,6 +17,7 @@ import { supabase } from "./lib/supabase";
 
 import AdminLayout from "./pages/AdminLayout";
 import AdminResumo from "./pages/AdminResumo";
+import AreasAtuacaoAdmin from "./pages/AreasAtuacaoAdmin";
 import WhatsAppButton from "./components/WhatsAppButton";
 import Patrimonio from "./pages/Patrimonio";
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route index element={<AdminResumo />} />
             <Route path="editais" element={<Editais />} />
             <Route path="noticias" element={<Noticias />} />
+            <Route path="areas" element={<AreasAtuacaoAdmin />} />
             <Route path="patrimonio" element={<Patrimonio />} />
             <Route path="patrimonio/:id" element={<PatrimonioDetalhe />} />
             <Route path="patrimonio/relatorio" element={<PatrimonioRelatorio />} />

@@ -55,6 +55,8 @@ export type Projeto = {
   tema: Tema;
   resumo: string;
   municipios: Municipio[];
+  emAndamento?: boolean; // mostra a etiqueta "Em andamento"
+  noticiaId?: string; // notícia do site que fala do projeto
 };
 
 const redeMiserior11: Municipio[] = [
@@ -64,6 +66,28 @@ const redeMiserior11: Municipio[] = [
 const rede7: Municipio[] = ["Sobral", "Forquilha", "Massapê", "Morrinhos", "Pacujá", "Meruoca", "Bela Cruz"];
 
 export const projetos: Projeto[] = [
+  // Projetos recentes, ainda não incluídos no currículo
+  {
+    nome: "Cisternas com o Comitê Betinho",
+    financiador: "Comitê Betinho",
+    periodo: "2026",
+    tema: "Água e semiárido",
+    resumo: "Construção de 27 cisternas de placas de 16 mil litros nas comunidades São Joaquim, Santa Luzia, Desterro e Cedro.",
+    municipios: ["Sobral"],
+    emAndamento: true,
+    noticiaId: "e062b1d9-744e-4404-846e-5e80d6168a1f",
+  },
+  {
+    nome: "Campanha Tenho Sede",
+    financiador: "ASA – Articulação Semiárido Brasileiro",
+    periodo: "2026",
+    tema: "Água e semiárido",
+    resumo: "Construção de 5 cisternas de 16 mil litros para captação da água da chuva no distrito de Aracatiaçu, com curso de Gestão de Recursos Hídricos para as famílias.",
+    municipios: ["Sobral"],
+    emAndamento: true,
+    noticiaId: "177cbaea-6871-4aee-95d0-c1468916acb8",
+  },
+  // Projetos do Currículo Institucional
   {
     nome: "Programa Ceará Sem Fome (Lotes 22 e 37)",
     financiador: "SDA / Governo do Estado do Ceará",
@@ -246,5 +270,15 @@ export const projetos: Projeto[] = [
 export const municipiosAtendidos = Array.from(new Set(projetos.flatMap((p) => p.municipios)));
 
 // Soma conservadora das pessoas citadas no currículo (2.032 + 240 + 100 pessoas, 300 + 150 famílias
-// contadas como 1 pessoa cada, e 100 quentinhas diárias). O número real é maior.
+// contadas como 1 pessoa cada, e 100 quentinhas diárias) mais as 32 famílias das cisternas de 2026.
+// O número real é maior.
 export const VIDAS_IMPACTADAS = 2900;
+
+// Ano de início e de fim de um projeto a partir do período ("2013 – 2015" ou "2021")
+export const anosDoProjeto = (p: Projeto): [number, number] => {
+  const anos = p.periodo.match(/\d{4}/g)?.map(Number) ?? [];
+  return [anos[0], anos[anos.length - 1]];
+};
+
+// Parceiros e financiadores, na ordem em que aparecem (projetos mais recentes primeiro)
+export const parceiros = Array.from(new Set(projetos.map((p) => p.financiador)));

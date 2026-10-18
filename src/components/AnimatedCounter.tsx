@@ -7,12 +7,13 @@ type AnimatedCounterProps = {
   duration?: number;
   delay?: number;
   className?: string;
+  imediato?: boolean; // conta assim que aparece ou o valor muda, sem esperar entrar na tela
 };
 
 // Conta de 0 até o valor quando o número entra na tela
-const AnimatedCounter = ({ value, suffix = "", duration = 2, delay = 0, className }: AnimatedCounterProps) => {
+const AnimatedCounter = ({ value, suffix = "", duration = 2, delay = 0, className, imediato = false }: AnimatedCounterProps) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true });
+  const isInView = useInView(ref, { once: true }) || imediato;
   const reduceMotion = useReducedMotion();
   const [display, setDisplay] = useState(reduceMotion ? value : 0);
 

@@ -9,7 +9,7 @@ const CearaSemFome = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section className="py-24 relative overflow-hidden" ref={ref}>
+    <section id="ceara-sem-fome" className="py-24 relative overflow-hidden scroll-mt-16" ref={ref}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
 
       <div className="container mx-auto px-4 relative z-10">

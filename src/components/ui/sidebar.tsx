@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, FileText, Newspaper, Building, LogOut, ChevronLeft, ChevronRight, LayoutDashboard, Menu } from "lucide-react";
+import { Home, FileText, Newspaper, Building, LogOut, ChevronLeft, ChevronRight, LayoutDashboard, Menu, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import logoCaritas from "@/assets/logo-caritas.png";
@@ -12,6 +12,7 @@ const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Resumo", end: true },
   { to: "/admin/editais", icon: FileText, label: "Editais" },
   { to: "/admin/noticias", icon: Newspaper, label: "Notícias" },
+  { to: "/admin/areas", icon: Layers, label: "Áreas de atuação" },
   { to: "/admin/patrimonio", icon: Building, label: "Patrimônio" },
 ];
 

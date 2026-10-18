@@ -6,7 +6,7 @@ import Hero from "@/components/Hero";
 import NewsCarousel from "@/components/NewsCarousel";
 import About from "@/components/About";
 import InteractiveMap from "@/components/InteractiveMap";
-import Projects from "@/components/Projects";
+import AreasAtuacao from "@/components/AreasAtuacao";
 import CearaSemFome from "@/components/CearaSemFome";
 import Collaborate from "@/components/Collaborate";
 import Team from "../components/Team";
@@ -42,7 +42,7 @@ const Index = () => {
         <NewsCarousel />
         <About />
         <InteractiveMap />
-        <Projects />
+        <AreasAtuacao />
         <CearaSemFome />
         <Team />
           <Collaborate />

@@ -183,3 +183,9 @@ All colors MUST be HSL.
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
 }
+
+/* Faixa de parceiros: rolagem contínua (a lista é duplicada para emendar sem corte) */
+@keyframes faixa-parceiros {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

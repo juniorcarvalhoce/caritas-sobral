@@ -38,6 +38,13 @@ const InteractiveMap = () => {
   const isInView = useInView(ref, { once: true });
   const [temaAtivo, setTemaAtivo] = useState<Tema | null>(null);
 
+  // "Ver no mapa" das Áreas de atuação: filtra pelo tema escolhido
+  useEffect(() => {
+    const aoFiltrar = (e: Event) => setTemaAtivo((e as CustomEvent<Tema | null>).detail ?? null);
+    window.addEventListener("filtrar-mapa", aoFiltrar);
+    return () => window.removeEventListener("filtrar-mapa", aoFiltrar);
+  }, []);
+
   const anoMaisAntigo = useMemo(
     () => Math.min(...projetos.map((p) => parseInt(p.periodo.slice(0, 4), 10))),
     []
@@ -181,8 +188,8 @@ const InteractiveMap = () => {
             className="w-full h-[420px] md:h-[520px] rounded-2xl overflow-hidden shadow-xl relative z-0"
           />
           <p className="text-xs text-muted-foreground mt-3">
-            O tamanho do círculo indica a quantidade de projetos no município. Fonte: Currículo Institucional
-            da Cáritas Diocesana de Sobral (outubro/2026).
+            O tamanho do círculo indica a quantidade de projetos no município. Fontes: Currículo Institucional
+            da Cáritas Diocesana de Sobral (outubro/2026) e projetos recentes.
           </p>
         </motion.div>
       </div>
