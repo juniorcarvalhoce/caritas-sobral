@@ -1,135 +1,179 @@
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
-import { useRef } from "react";
-import { Heart, Target, Users, Award } from "lucide-react";
+import { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
+import { Compass, ExternalLink, Globe2, HeartHandshake, Leaf, MapPin, Quote, Scale, Users } from "lucide-react";
+import { useConteudoSobre, sobrePadrao } from "@/data/sobre";
+
+const valores = [
+  { icone: HeartHandshake, titulo: "Solidariedade", descricao: "Amor ao próximo e compromisso com os mais vulneráveis" },
+  { icone: Scale, titulo: "Justiça Social", descricao: "Luta pela igualdade e pela dignidade humana" },
+  { icone: Users, titulo: "Participação", descricao: "Protagonismo das comunidades em seu próprio desenvolvimento" },
+  { icone: Leaf, titulo: "Sustentabilidade", descricao: "Ações duradouras que respeitam a vida e o meio ambiente" },
+];
+
+// A Cáritas Diocesana faz parte de uma rede que vai do local ao mundial
+const rede = [
+  {
+    nivel: "Local",
+    nome: "Cáritas Diocesana de Sobral",
+    descricao: "Atua nas comunidades da Diocese de Sobral desde 1983.",
+    icone: MapPin,
+  },
+  {
+    nivel: "Nacional",
+    nome: "Cáritas Brasileira",
+    descricao: "Organismo da CNBB presente em todo o país, organizado em regionais, como o Regional Ceará.",
+    icone: Compass,
+    link: "https://caritas.org.br/",
+  },
+  {
+    nivel: "Mundial",
+    nome: "Caritas Internationalis",
+    descricao: "Uma das maiores redes humanitárias do mundo, presente em mais de 200 países e territórios.",
+    icone: Globe2,
+    link: "https://www.caritas.org/",
+  },
+];
 
 const About = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const { data: conteudo = sobrePadrao } = useConteudoSobre();
+  const [fotoFalhou, setFotoFalhou] = useState(false);
 
-  const values = [
-    {
-      icon: Heart,
-      title: "Solidariedade",
-      description: "Amor ao próximo e compromisso com os mais vulneráveis",
-    },
-    {
-      icon: Target,
-      title: "Justiça Social",
-      description: "Luta pela igualdade e dignidade humana",
-    },
-    {
-      icon: Users,
-      title: "Participação",
-      description: "Protagonismo das comunidades em seu desenvolvimento",
-    },
-    {
-      icon: Award,
-      title: "Sustentabilidade",
-      description: "Ações duradouras que respeitam o meio ambiente",
-    },
-  ];
+  const paragrafos = conteudo.historia.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+
+  const aparecer = (atraso = 0) => ({
+    initial: { opacity: 0, y: 24 },
+    animate: isInView ? { opacity: 1, y: 0 } : {},
+    transition: { duration: 0.6, delay: atraso },
+  });
 
   return (
-    <section id="sobre" className="py-24 relative overflow-hidden">
+    <section id="sobre" className="py-20 md:py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/20 to-background" />
-      
       <div className="container mx-auto px-4 relative z-10" ref={ref}>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <motion.div {...aparecer()} className="text-center mb-12 md:mb-16">
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
             Sobre a <span className="text-gradient">Cáritas Diocesana</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Uma história de fé, solidariedade e transformação social
-          </p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">Uma história de fé, solidariedade e transformação social</p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="glass rounded-3xl p-8 md:p-12"
-          >
-            <h3 className="font-heading text-2xl font-semibold mb-6">Nossa História</h3>
-            <div className="space-y-4 text-muted-foreground">
-              <p>
-                A <strong className="text-foreground">Cáritas Diocesana de Sobral</strong> foi fundada em{" "}
-                <strong className="text-foreground">1 de outubro de 1983</strong>, como um organismo da
-                Conferência Nacional dos Bispos do Brasil (CNBB), dedicada à promoção da justiça social
-                e ao desenvolvimento humano integral.
-              </p>
-              <p>
-                Com mais de 40 anos de atuação, desenvolvemos projetos que fortalecem a convivência
-                com o semiárido, promovem a economia solidária, empoderam as juventudes e incentivam
-                a participação em políticas públicas.
-              </p>
-              <p>
-                Atuamos na prática da <strong className="text-foreground">Justiça Social e da Solidariedade Libertadora</strong>{" "}
-                através de ações concretas que promovam a dignidade humana, a sustentabilidade e a
-                transformação social.
-              </p>
+        {/* Foto e história */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-14 md:mb-16">
+          <motion.div {...aparecer(0.1)} className="relative">
+            <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-xl bg-muted">
+              {conteudo.foto && !fotoFalhou ? (
+                <img
+                  src={conteudo.foto}
+                  alt="Equipe e comunidades da Cáritas Diocesana de Sobral"
+                  loading="lazy"
+                  onError={() => setFotoFalhou(true)}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary" />
+              )}
             </div>
-
-            <div className="mt-8 pt-8 border-t border-border">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">CNPJ</p>
-                  <p className="font-semibold">10.379.758/0001-36</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Fundação</p>
-                  <p className="font-semibold">01/10/1983</p>
-                </div>
-              </div>
+            <div className="absolute -bottom-5 left-5 md:left-8 bg-card rounded-2xl shadow-lg border px-5 py-3">
+              <p className="text-xs text-muted-foreground">Fundada em</p>
+              <p className="font-heading text-xl font-bold text-primary">1º de outubro de 1983</p>
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="space-y-4"
-          >
-            {values.map((value, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-                className="glass rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group hover:scale-105"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <value.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-heading font-semibold text-lg mb-1">{value.title}</h4>
-                    <p className="text-sm text-muted-foreground">{value.description}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <motion.div {...aparecer(0.2)} className="pt-4 lg:pt-0">
+            <h3 className="font-heading text-2xl md:text-3xl font-semibold mb-5">Nossa história</h3>
+            <div className="space-y-4 text-muted-foreground leading-relaxed">
+              {paragrafos.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+            <dl className="mt-8 pt-6 border-t grid grid-cols-2 gap-4">
+              <div>
+                <dt className="text-sm text-muted-foreground mb-1">CNPJ</dt>
+                <dd className="font-semibold">10.379.758/0001-36</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground mb-1">Sede</dt>
+                <dd className="font-semibold">Centro, Sobral – CE</dd>
+              </div>
+            </dl>
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="glass rounded-3xl p-8 md:p-12 text-center"
+        {/* Missão em destaque */}
+        <motion.figure
+          {...aparecer(0.1)}
+          className="relative rounded-3xl bg-gradient-to-br from-primary to-[#8f1530] text-white px-6 py-10 md:px-14 md:py-14 mb-8 overflow-hidden"
         >
-          <h3 className="font-heading text-2xl font-semibold mb-4">Nossa Missão</h3>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Nossa missão é animar, organizar e participar efetivamente da prática da Justiça Social e
-            Solidariedade Libertadora com os excluídos da nossa sociedade, contribuindo na construção de
-            alternativas para que todas as pessoas tenham igual direito a uma vida digna.
-          </p>
+          <Quote className="absolute -top-2 -left-2 w-32 h-32 text-white/10" aria-hidden="true" />
+          <p className="relative text-xs font-semibold uppercase tracking-[0.2em] text-white/75 mb-4">Nossa missão</p>
+          <blockquote className="relative font-heading text-lg sm:text-xl md:text-3xl font-semibold leading-snug max-w-4xl">
+            {conteudo.missao}
+          </blockquote>
+        </motion.figure>
+
+        {/* Visão e valores */}
+        <div className="grid lg:grid-cols-[1fr_2fr] gap-6 mb-16 md:mb-20">
+          <motion.div {...aparecer(0.15)} className="bg-card rounded-3xl border p-6 md:p-8">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+              <Compass className="w-5 h-5" />
+            </div>
+            <h3 className="font-heading text-xl font-semibold mb-3">Nossa visão</h3>
+            <p className="text-muted-foreground leading-relaxed">{conteudo.visao}</p>
+          </motion.div>
+
+          <motion.div {...aparecer(0.2)} className="bg-card rounded-3xl border p-6 md:p-8">
+            <h3 className="font-heading text-xl font-semibold mb-5">Nossos valores</h3>
+            <div className="grid sm:grid-cols-2 gap-5">
+              {valores.map((v) => (
+                <div key={v.titulo} className="flex items-start gap-3 group">
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-primary group-hover:text-white">
+                    <v.icone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{v.titulo}</h4>
+                    <p className="text-sm text-muted-foreground">{v.descricao}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Rede Cáritas */}
+        <motion.div {...aparecer(0.1)}>
+          <div className="text-center mb-8">
+            <h3 className="font-heading text-2xl md:text-3xl font-bold mb-2">Parte de uma rede mundial</h3>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              A Cáritas Diocesana de Sobral integra a rede Cáritas, que une o trabalho nas comunidades a uma presença
+              solidária em todo o mundo.
+            </p>
+          </div>
+          <ol className="relative grid md:grid-cols-3 gap-5">
+            {/* Linha que liga os três níveis (computador) */}
+            <div className="hidden md:block absolute top-9 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-primary/20 via-primary/50 to-primary/20" aria-hidden="true" />
+            {rede.map((item) => (
+              <li key={item.nome} className="relative bg-card rounded-2xl border p-6 text-center">
+                <div className="relative mx-auto w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center mb-4 ring-8 ring-background">
+                  <item.icone className="w-5 h-5" />
+                </div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1">{item.nivel}</p>
+                <p className="font-heading font-semibold text-lg mb-2">{item.nome}</p>
+                <p className="text-sm text-muted-foreground mb-3">{item.descricao}</p>
+                {item.link && (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                  >
+                    Conhecer <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </li>
+            ))}
+          </ol>
         </motion.div>
       </div>
     </section>
