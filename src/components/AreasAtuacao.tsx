@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronDown, MapPin, Newspaper, Utensils } from "lucide-react";
+import { ChevronDown, ExternalLink, MapPin, Newspaper, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import Trajetoria from "@/components/Trajetoria";
@@ -247,13 +247,14 @@ const AreasAtuacao = () => {
                           A Cáritas Diocesana de Sobral é gestora local do programa, com Unidades Sociais Produtoras de refeições
                           em 11 municípios.
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => document.getElementById("ceara-sem-fome")?.scrollIntoView({ behavior: "smooth" })}
+                        <a
+                          href="https://www.cearasemfome.ce.gov.br/"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-sm font-semibold bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 transition-colors"
                         >
-                          Conhecer o programa <ArrowRight className="w-4 h-4" />
-                        </button>
+                          Conhecer o programa <ExternalLink className="w-4 h-4" />
+                        </a>
                       </div>
                     )}
 

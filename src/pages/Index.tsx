@@ -7,7 +7,6 @@ import NewsCarousel from "@/components/NewsCarousel";
 import About from "@/components/About";
 import InteractiveMap from "@/components/InteractiveMap";
 import AreasAtuacao from "@/components/AreasAtuacao";
-import CearaSemFome from "@/components/CearaSemFome";
 import Collaborate from "@/components/Collaborate";
 import Team from "../components/Team";
 import Contact from "../components/Contact";
@@ -43,7 +42,6 @@ const Index = () => {
         <About />
         <InteractiveMap />
         <AreasAtuacao />
-        <CearaSemFome />
         <Team />
           <Collaborate />
           <SuaNotaTemValor />
