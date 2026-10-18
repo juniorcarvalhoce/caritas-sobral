@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { Compass, ExternalLink, Globe2, HeartHandshake, Leaf, MapPin, Quote, Scale, Users } from "lucide-react";
+import { Compass, ExternalLink, Globe2, HeartHandshake, Leaf, Map as MapIcon, MapPin, Quote, Scale, Users } from "lucide-react";
 import { useConteudoSobre, sobrePadrao } from "@/data/sobre";
 
 const valores = [
@@ -13,21 +13,31 @@ const valores = [
 // A Cáritas Diocesana faz parte de uma rede que vai do local ao mundial
 const rede = [
   {
-    nivel: "Local",
+    nivel: "Diocesano",
     nome: "Cáritas Diocesana de Sobral",
+    local: "Sobral – CE",
     descricao: "Atua nas comunidades da Diocese de Sobral desde 1983.",
     icone: MapPin,
   },
   {
+    nivel: "Regional",
+    nome: "Cáritas Brasileira Regional Ceará",
+    local: "Fortaleza – CE",
+    descricao: "Articula as Cáritas diocesanas do Ceará e fortalece o trabalho em rede no estado.",
+    icone: MapIcon,
+  },
+  {
     nivel: "Nacional",
     nome: "Cáritas Brasileira",
-    descricao: "Organismo da CNBB presente em todo o país, organizado em regionais, como o Regional Ceará.",
+    local: "Brasília – DF",
+    descricao: "Organismo da CNBB presente em todo o país, organizado em regionais.",
     icone: Compass,
     link: "https://caritas.org.br/",
   },
   {
-    nivel: "Mundial",
+    nivel: "Internacional",
     nome: "Caritas Internationalis",
+    local: "Rede mundial",
     descricao: "Uma das maiores redes humanitárias do mundo, presente em mais de 200 países e territórios.",
     icone: Globe2,
     link: "https://www.caritas.org/",
@@ -146,20 +156,24 @@ const About = () => {
           <div className="text-center mb-8">
             <h3 className="font-heading text-2xl md:text-3xl font-bold mb-2">Parte de uma rede mundial</h3>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              A Cáritas Diocesana de Sobral integra a rede Cáritas, que une o trabalho nas comunidades a uma presença
+              A Cáritas Diocesana de Sobral integra a rede Cáritas, que liga o trabalho nas comunidades ao Regional Ceará, à Cáritas Brasileira e a uma presença
               solidária em todo o mundo.
             </p>
           </div>
-          <ol className="relative grid md:grid-cols-3 gap-5">
+          <ol className="relative grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Linha que liga os três níveis (computador) */}
-            <div className="hidden md:block absolute top-9 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-primary/20 via-primary/50 to-primary/20" aria-hidden="true" />
+            <div className="hidden lg:block absolute top-9 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-primary/20 via-primary/50 to-primary/20" aria-hidden="true" />
             {rede.map((item) => (
               <li key={item.nome} className="relative bg-card rounded-2xl border p-6 text-center">
                 <div className="relative mx-auto w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center mb-4 ring-8 ring-background">
                   <item.icone className="w-5 h-5" />
                 </div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1">{item.nivel}</p>
-                <p className="font-heading font-semibold text-lg mb-2">{item.nome}</p>
+                <p className="font-heading font-semibold text-lg leading-snug">{item.nome}</p>
+                <p className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-2 mt-1">
+                  <MapPin className="w-3 h-3" />
+                  {item.local}
+                </p>
                 <p className="text-sm text-muted-foreground mb-3">{item.descricao}</p>
                 {item.link && (
                   <a
