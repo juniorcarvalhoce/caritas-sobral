@@ -6,6 +6,7 @@ interface Pessoa {
   cargo: string;
   nome: string;
   foto?: string;
+  posicao?: string;
 }
 
 const iniciais = (nome: string) =>
@@ -28,6 +29,7 @@ const Foto = ({ pessoa, className }: { pessoa: Pessoa; className: string }) => (
         alt={pessoa.nome}
         loading="lazy"
         className="w-full h-full object-cover object-top"
+        style={pessoa.posicao ? { objectPosition: pessoa.posicao } : undefined}
       />
     ) : (
       <span className="font-heading font-bold text-white text-2xl">{iniciais(pessoa.nome)}</span>
@@ -58,6 +60,8 @@ const Team = () => {
   const bispo: Pessoa = {
     cargo: "Bispo Diocesano",
     nome: "Dom José Luiz Gomes de Vasconcelos",
+    foto: "/equipe/dom-jose-luiz.png",
+    posicao: "center 85%",
   };
 
   const diretoria: Pessoa[] = [
