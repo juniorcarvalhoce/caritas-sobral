@@ -194,6 +194,14 @@ const Editais = () => {
     return pub.publicUrl;
   };
 
+  // Anexo com arquivo mas sem nome ganha o nome do arquivo; antes era descartado em silêncio ao salvar.
+  const normalizarAnexos = (lista: typeof anexos) =>
+    lista.map((a) =>
+      a.arquivo && !a.descricao.trim()
+        ? { ...a, descricao: a.arquivo.name.replace(/\.[^.]+$/, "") }
+        : a
+    );
+
   const adicionarAnexo = () => {
     setAnexos([...anexos, { descricao: "", arquivo: null, remover: false }]);
   };
@@ -237,7 +245,7 @@ const Editais = () => {
         .single();
       if (error) throw error;
 
-      for (const anexo of anexos) {
+      for (const anexo of normalizarAnexos(anexos)) {
         if (!anexo.arquivo || !anexo.descricao) continue;
         const arquivoUrl = await uploadPdfAndGetUrl(anexo.arquivo);
         const { error: errorAnexo } = await supabase.from("edital_anexos").insert({
@@ -284,7 +292,8 @@ const Editais = () => {
         .eq("id", editing.id);
       if (error) throw error;
 
-      const anexosParaRemover = anexos.filter(a => a.remover && a.id);
+      const anexosNorm = normalizarAnexos(anexos);
+      const anexosParaRemover = anexosNorm.filter(a => a.remover && a.id);
       for (const anexo of anexosParaRemover) {
         const { error: errorRemover } = await supabase
           .from("edital_anexos")
@@ -293,7 +302,7 @@ const Editais = () => {
         if (errorRemover) throw errorRemover;
       }
 
-      const anexosSubstituir = anexos.filter(a => a.id && !a.remover && a.arquivo && a.descricao);
+      const anexosSubstituir = anexosNorm.filter(a => a.id && !a.remover && a.arquivo && a.descricao);
       for (const anexo of anexosSubstituir) {
         if (!anexo.arquivo) continue;
         const arquivoUrl = await uploadPdfAndGetUrl(anexo.arquivo);
@@ -304,7 +313,7 @@ const Editais = () => {
         if (errorUpd) throw errorUpd;
       }
 
-      const anexosAtualizarDescricao = anexos.filter(a => a.id && !a.remover && !a.arquivo && a.descricao);
+      const anexosAtualizarDescricao = anexosNorm.filter(a => a.id && !a.remover && !a.arquivo && a.descricao);
       for (const anexo of anexosAtualizarDescricao) {
         const { error: errorUpd } = await supabase
           .from("edital_anexos")
@@ -313,7 +322,7 @@ const Editais = () => {
         if (errorUpd) throw errorUpd;
       }
 
-      const novosAnexos = anexos.filter(a => !a.id && !a.remover && a.arquivo && a.descricao);
+      const novosAnexos = anexosNorm.filter(a => !a.id && !a.remover && a.arquivo && a.descricao);
       for (const anexo of novosAnexos) {
         if (!anexo.arquivo || !anexo.descricao) continue;
         const arquivoUrl = await uploadPdfAndGetUrl(anexo.arquivo);
@@ -351,6 +360,12 @@ const Editais = () => {
   });
 
   const onSubmit = async (values: EditalFormValues) => {
+    // Linha de anexo com nome mas sem arquivo (e ainda não salva) seria ignorada: avisa em vez de salvar sem o anexo.
+    const semArquivo = anexos.some((a) => !a.remover && !a.id && !a.arquivo && a.descricao.trim());
+    if (semArquivo) {
+      toast.error("Há um anexo sem arquivo. Escolha o arquivo ou remova a linha antes de salvar.");
+      return;
+    }
     if (editing) {
       await updateMutation.mutateAsync({ values });
     } else {
