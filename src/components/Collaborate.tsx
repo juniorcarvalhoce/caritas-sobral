@@ -45,54 +45,8 @@ const Collaborate = () => {
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            id="voluntario"
-            className="scroll-mt-24 glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500"
-          >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <Users className="w-8 h-8 text-white" />
-            </div>
-            
-            <h3 className="font-heading text-2xl font-semibold mb-4">Seja Voluntário</h3>
-            
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Junte-se a nós e contribua com seu tempo, talento e dedicação para transformar
-              a realidade de comunidades vulneráveis. Cada gesto de solidariedade faz a diferença!
-            </p>
-
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-center gap-3 text-sm">
-                <div className="w-2 h-2 bg-primary rounded-full" />
-                <span>Participe de ações comunitárias</span>
-              </li>
-              <li className="flex items-center gap-3 text-sm">
-                <div className="w-2 h-2 bg-primary rounded-full" />
-                <span>Contribua com suas habilidades</span>
-              </li>
-              <li className="flex items-center gap-3 text-sm">
-                <div className="w-2 h-2 bg-primary rounded-full" />
-                <span>Ajude a construir um futuro melhor</span>
-              </li>
-            </ul>
-
-            <Button
-              variant="default"
-              className="w-full"
-              onClick={() => {
-                const element = document.getElementById("contato");
-                if (element) element.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              <Users className="w-5 h-5" />
-              Entre em Contato
-            </Button>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
             id="doacao"
-            className="scroll-mt-24 glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500"
+            className="scroll-mt-24 glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500 flex flex-col"
           >
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <Heart className="w-8 h-8 text-white" />
@@ -211,6 +165,75 @@ const Collaborate = () => {
                 Cáritas Diocesana de Sobral
               </p>
             </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            id="voluntario"
+            className="scroll-mt-24 glass rounded-3xl p-8 md:p-10 group hover:shadow-2xl transition-all duration-500 flex flex-col"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <Users className="w-8 h-8 text-white" />
+            </div>
+            
+            <h3 className="font-heading text-2xl font-semibold mb-4">Seja Voluntário</h3>
+            
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Junte-se a nós e contribua com seu tempo, talento e dedicação para transformar
+              a realidade de comunidades vulneráveis. Cada gesto de solidariedade faz a diferença!
+            </p>
+
+            <ul className="space-y-3 mb-6">
+              <li className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 bg-primary rounded-full" />
+                <span>Participe de ações comunitárias</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 bg-primary rounded-full" />
+                <span>Contribua com suas habilidades</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 bg-primary rounded-full" />
+                <span>Ajude a construir um futuro melhor</span>
+              </li>
+            </ul>
+
+            <div className="mb-8">
+              <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-3">
+                Como participar
+              </p>
+              <ol className="space-y-4">
+                {[
+                  ["Entre em contato", "Fale com a gente pelo WhatsApp, telefone ou e-mail."],
+                  ["Vamos conversar", "Conhecemos seu perfil e sua disponibilidade de tempo."],
+                  ["Mãos à obra", "Você começa em uma ação que combina com você."],
+                ].map(([titulo, texto], i) => (
+                  <li key={titulo} className="flex items-start gap-4">
+                    <span className="w-8 h-8 rounded-full bg-primary/10 text-primary font-heading font-bold text-sm flex items-center justify-center flex-shrink-0">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <p className="font-semibold text-sm">{titulo}</p>
+                      <p className="text-sm text-muted-foreground">{texto}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <Button
+              variant="default"
+              className="w-full mt-auto"
+              onClick={() => {
+                const element = document.getElementById("contato");
+                if (element) element.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              <Users className="w-5 h-5" />
+              Entre em Contato
+            </Button>
           </motion.div>
         </div>
       </div>
