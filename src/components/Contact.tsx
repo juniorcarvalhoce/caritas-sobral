@@ -1,60 +1,69 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef, useState } from "react";
-import { MapPin, Phone, Mail, Instagram, Send } from "lucide-react";
+import { useRef } from "react";
+import { MapPin, Phone, Mail, Instagram, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+
+const WHATSAPP_URL =
+  "https://wa.me/5588994253039?text=" +
+  encodeURIComponent("Olá! Gostaria de falar com a Cáritas Diocesana de Sobral.");
+
+interface Linha {
+  texto: string;
+  href: string;
+  externo?: boolean;
+  secundaria?: boolean;
+}
+
+interface Info {
+  icon: typeof MapPin;
+  title: string;
+  linhas: Linha[];
+}
+
+const contactInfo: Info[] = [
+  {
+    icon: MapPin,
+    title: "Endereço",
+    linhas: [
+      {
+        texto: "Praça Quirino Rodrigues, 76 - Sala 04",
+        href: "https://www.google.com/maps/search/?api=1&query=-3.6850177,-40.3452534",
+        externo: true,
+      },
+      {
+        texto: "Centro - Sobral/CE - CEP 62011-260",
+        href: "https://www.google.com/maps/search/?api=1&query=-3.6850177,-40.3452534",
+        externo: true,
+        secundaria: true,
+      },
+    ],
+  },
+  {
+    icon: Phone,
+    title: "Telefones",
+    linhas: [
+      { texto: "(88) 9.9425-3039", href: "tel:+5588994253039" },
+      { texto: "(88) 9.9961-9348", href: "tel:+5588999619348", secundaria: true },
+    ],
+  },
+  {
+    icon: Mail,
+    title: "E-mail",
+    linhas: [{ texto: "caritassobral@hotmail.com", href: "mailto:caritassobral@hotmail.com" }],
+  },
+  {
+    icon: Instagram,
+    title: "Instagram",
+    linhas: [
+      { texto: "@caritassobral", href: "https://www.instagram.com/caritassobral/", externo: true },
+    ],
+  },
+];
 
 const Contact = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const whatsappMessage = `*Contato via Site*%0A%0A*Nome:* ${formData.name}%0A*Email:* ${formData.email}%0A*Telefone:* ${formData.phone}%0A*Mensagem:* ${formData.message}`;
-    const whatsappUrl = `https://wa.me/5588994253039?text=${whatsappMessage}`;
-    
-    window.open(whatsappUrl, "_blank");
-    toast.success("Redirecionando para o WhatsApp...");
-    
-    setFormData({ name: "", email: "", phone: "", message: "" });
-  };
-
-  const contactInfo = [
-    {
-      icon: MapPin,
-      title: "Endereço",
-      content: "Praça Quirino Rodrigues, 76 - Sala 04",
-      subtitle: "Centro - Sobral/CE - CEP 62011-260",
-    },
-    {
-      icon: Phone,
-      title: "Telefones",
-      content: "(88) 9.9425-3039",
-      subtitle: "(88) 9.9961-9348",
-    },
-    {
-      icon: Mail,
-      title: "E-mail",
-      content: "caritassobral@hotmail.com",
-      subtitle: "",
-    },
-    {
-      icon: Instagram,
-      title: "Instagram",
-      content: "@caritassobral",
-      subtitle: "",
-    },
-  ];
 
   return (
     <section id="contato" className="py-24 relative overflow-hidden" ref={ref}>
@@ -80,9 +89,8 @@ const Contact = () => {
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-6"
           >
-            <div className="glass rounded-3xl p-8 h-[400px]">
+            <div className="glass rounded-3xl p-8 h-[400px] lg:h-full lg:min-h-[400px]">
               <iframe
                 src="https://maps.google.com/maps?q=-3.6850177,-40.3452534&z=18&hl=pt-BR&output=embed"
                 width="100%"
@@ -94,11 +102,13 @@ const Contact = () => {
                 title="Localização Cáritas Sobral"
               />
             </div>
+          </motion.div>
 
+          <div className="flex flex-col gap-4">
             <div className="grid sm:grid-cols-2 gap-4">
               {contactInfo.map((info, index) => (
                 <motion.div
-                  key={index}
+                  key={info.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
@@ -108,91 +118,42 @@ const Contact = () => {
                     <info.icon className="w-6 h-6 text-primary" />
                   </div>
                   <h3 className="font-heading font-semibold mb-2">{info.title}</h3>
-                  <p className="text-sm text-foreground font-medium">{info.content}</p>
-                  {info.subtitle && (
-                    <p className="text-xs text-muted-foreground mt-1">{info.subtitle}</p>
-                  )}
+                  {info.linhas.map((linha) => (
+                    <a
+                      key={linha.texto}
+                      href={linha.href}
+                      {...(linha.externo ? { target: "_blank", rel: "noreferrer" } : {})}
+                      className={`block break-words hover:text-primary hover:underline transition-colors ${
+                        linha.secundaria
+                          ? "text-xs text-muted-foreground mt-1"
+                          : "text-sm text-foreground font-medium"
+                      }`}
+                    >
+                      {linha.texto}
+                    </a>
+                  ))}
                 </motion.div>
               ))}
             </div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <form onSubmit={handleSubmit} className="glass rounded-3xl p-8 space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-2">
-                  Nome Completo
-                </label>
-                <Input
-                  id="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Seu nome"
-                  className="glass-dark"
-                />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.4, delay: 0.8 }}
+              className="glass rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4 sm:justify-between lg:mt-auto"
+            >
+              <div className="text-center sm:text-left">
+                <p className="font-heading font-semibold">Prefere conversar agora?</p>
+                <p className="text-sm text-muted-foreground">Fale com a gente pelo WhatsApp</p>
               </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-2">
-                  E-mail
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="seu@email.com"
-                  className="glass-dark"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium mb-2">
-                  Telefone
-                </label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="(88) 9 9999-9999"
-                  className="glass-dark"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-2">
-                  Mensagem
-                </label>
-                <Textarea
-                  id="message"
-                  required
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder="Como podemos ajudar?"
-                  rows={5}
-                  className="glass-dark resize-none"
-                />
-              </div>
-
-              <Button type="submit" variant="default" className="w-full group" size="lg">
-                <Send className="w-5 h-5" />
-                Enviar Mensagem
+              <Button asChild size="lg" className="bg-[#25D366] hover:bg-[#1ebe5a] text-white">
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                  <MessageCircle className="w-5 h-5" />
+                  Chamar no WhatsApp
+                </a>
               </Button>
-
-              <p className="text-xs text-center text-muted-foreground">
-                Ao enviar, você será redirecionado para o WhatsApp
-              </p>
-            </form>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>
