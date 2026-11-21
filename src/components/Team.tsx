@@ -60,8 +60,7 @@ const Team = () => {
   const bispo: Pessoa = {
     cargo: "Bispo Diocesano",
     nome: "Dom José Luiz Gomes de Vasconcelos",
-    foto: "/equipe/dom-jose-luiz.png",
-    posicao: "center 85%",
+    foto: "/equipe/dom-jose-luiz.jpg",
   };
 
   const diretoria: Pessoa[] = [
@@ -71,9 +70,10 @@ const Team = () => {
     { cargo: "Secretária", nome: "Irmã Maria Elizete Sousa Carneiro", foto: "/equipe/irma-elizete.png" },
   ];
 
-  const apoio: Pessoa[] = [
-    { cargo: "Coordenação Executiva", nome: "Emanuelle Rocha dos Santos" },
-    { cargo: "Diácono Voluntário", nome: "José Maria Gomes Vasconcelos" },
+  const colegiada: Pessoa[] = [
+    { cargo: "Coordenadora · Integrante Permanente", nome: "Emanuelle Rocha dos Santos", foto: "/equipe/emanuelle.jpg" },
+    { cargo: "Integrante da Colegiada", nome: "Izabelly Orlanda", foto: "/equipe/izabelly.jpg" },
+    { cargo: "Integrante da Colegiada", nome: "Marcinho Vasconcelos", foto: "/equipe/marcinho.jpg" },
   ];
 
   const conselho = {
@@ -97,7 +97,7 @@ const Team = () => {
           className="text-center mb-16"
         >
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-            Nossa <span className="text-gradient">Equipe</span>
+            Quem Somos <span className="text-gradient">Nós</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Pessoas dedicadas que fazem a diferença todos os dias
@@ -127,9 +127,16 @@ const Team = () => {
                 <CartaoPessoa key={membro.cargo} membro={membro} delay={0.1 * index} />
               ))}
             </div>
-            <div className="grid sm:grid-cols-2 gap-6 mt-6 max-w-2xl mx-auto">
-              {apoio.map((membro, index) => (
-                <CartaoPessoa key={membro.cargo} membro={membro} delay={0.1 * index} />
+          </div>
+
+          <div>
+            <h3 className="font-heading text-2xl font-semibold mb-2 text-center">Colegiada</h3>
+            <p className="text-muted-foreground text-sm text-center mb-6">
+              Coordenação colegiada da Cáritas Diocesana de Sobral
+            </p>
+            <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {colegiada.map((membro, index) => (
+                <CartaoPessoa key={membro.nome} membro={membro} delay={0.1 * index} />
               ))}
             </div>
           </div>
